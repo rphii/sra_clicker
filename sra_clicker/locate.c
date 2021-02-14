@@ -28,14 +28,17 @@ sra_locate_data_t;
 
 static void sra_locate_refresh(sra_locate_t *self);
 static bool sra_locate_locate_color_rgb(sra_locate_t *self, uint8_t r, uint8_t g, uint8_t b);
+static void sra_locate_get_color_rgb_xy(sra_locate_t *self, int x, int y);
+static uint32_t sra_locate_get_color_xy(sra_locate_t *self, int x, int y);
 
 /**********************************/
 /*** HELPER FUNCTION PROTOTYPES ***/
 /**********************************/
 
-static inline uint8_t PosB(sra_locate_t *self, uint8_t x, uint8_t y);
-static inline uint8_t PosR(sra_locate_t *self, uint8_t x, uint8_t y);
-static inline uint8_t PosG(sra_locate_t *self, uint8_t x, uint8_t y);
+static uint8_t PosB(sra_locate_t *self, int x, int y);
+static uint8_t PosR(sra_locate_t *self, int x, int y);
+static uint8_t PosG(sra_locate_t *self, int x, int y);
+static uint8_t PosA(sra_locate_t *self, int x, int y);
 
 /***********************************/
 /*** PUBLIC FUNCTION DEFINITIONS ***/
@@ -55,6 +58,9 @@ void sra_locate_setup(sra_locate_t *self)
     // initialize publics with 0
     self->x = 0;
     self->y = 0;
+    self->r = 0;
+    self->g = 0;
+    self->b = 0;
     
     // initialize data with 0
     _data->Pixels = NULL;
@@ -64,6 +70,8 @@ void sra_locate_setup(sra_locate_t *self)
     // assign functions
     self->refresh = sra_locate_refresh;
     self->locate_color_rgb = sra_locate_locate_color_rgb;
+    self->get_color_rgb_xy = sra_locate_get_color_rgb_xy;
+    self->get_color_xy = sra_locate_get_color_xy;
 }
 
 /*  func    sra_locate_free
@@ -96,49 +104,74 @@ void sra_locate_free(sra_locate_t *self)
  */
 static void sra_locate_refresh(sra_locate_t *self)
 {
+    if(!self) return;   // error precaution
     // https://stackoverflow.com/questions/3291167/how-can-i-take-a-screenshot-in-a-windows-application
     // https://stackoverflow.com/questions/16112482/c-getting-rgb-from-hbitmap
+    HDC hScreen = CreateDC(L"DISPLAY", NULL, NULL, NULL);
+    _data->Width = GetDeviceCaps(hScreen, HORZRES);
+    _data->Height = GetDeviceCaps(hScreen, VERTRES);
     
-    // get the device context of the screen
-    HDC hScreenDC = CreateDC("DISPLAY", NULL, NULL, NULL);     
-    // and a device context to put it in
-    HDC hMemoryDC = CreateCompatibleDC(hScreenDC);
-    
-    _data->Width = GetDeviceCaps(hScreenDC, HORZRES);
-    _data->Height = GetDeviceCaps(hScreenDC, VERTRES);
-    
-    // maybe worth checking these are positive values
-    HBITMAP hBitmap = CreateCompatibleBitmap(hScreenDC, _data->Width, _data->Height);
-    
-    HGDIOBJ hOld = SelectObject(hMemoryDC, hBitmap);
-    BitBlt(hMemoryDC, 0, 0, _data->Width, _data->Height, hScreenDC, 0, 0, SRCCOPY);
-    SelectObject(hMemoryDC, hOld);
+    HDC hdcMem = CreateCompatibleDC(hScreen);
+    HBITMAP hBitmap = CreateCompatibleBitmap(hScreen, _data->Width, _data->Height);
+    HGDIOBJ hOld = SelectObject(hdcMem, hBitmap);
+    BitBlt(hdcMem, 0, 0, _data->Width, _data->Height, hScreen, 0, 0, SRCCOPY);
+    SelectObject(hdcMem, hOld);
     
     BITMAPINFOHEADER bmi = {0};
     bmi.biSize = sizeof(BITMAPINFOHEADER);
     bmi.biPlanes = 1;
     bmi.biBitCount = 32;
     bmi.biWidth = _data->Width;
-    bmi.biHeight = _data->Height;
+    bmi.biHeight = -_data->Height;
     bmi.biCompression = BI_RGB;
-    bmi.biSizeImage = 0;// 3 * ScreenX * ScreenY;
+    bmi.biSizeImage = 4 * _data->Width * _data->Height;//0;// 3 * _data->Width * _data->Height;
     
-    // free byte data
     if(_data->Pixels)
     {
         free(_data->Pixels);
     }
-    
-    // allocate memory
     _data->Pixels = (BYTE*)malloc(4 * _data->Width * _data->Height);
+    //if(ScreenData)
+    //    free(ScreenData);
+    //ScreenData = (BYTE*)malloc(4 * _data->Width * _data->Height);
     
-    // retrieves the bits of the specified compatible bitmap
-    GetDIBits(hMemoryDC, hBitmap, 0, _data->Width, _data->Pixels, (BITMAPINFO*)&bmi, DIB_RGB_COLORS);
+    GetDIBits(hdcMem, hBitmap, 0, _data->Height, _data->Pixels, (BITMAPINFO*)&bmi, DIB_RGB_COLORS);
     
-    // clean up
-    ReleaseDC(GetDesktopWindow(),hScreenDC);
-    DeleteDC(hMemoryDC);
+    ReleaseDC(GetDesktopWindow(),hScreen);
+    DeleteDC(hdcMem);
     DeleteObject(hBitmap);
+    
+    // TODO remove the code below; checkd to see wheter or not images are correct or not => they are
+    // save the bitmap
+    /*
+    BITMAPFILEHEADER bf = {0};
+    bf.bfType = 0x4D42;
+    bf.bfOffBits = 40 + 14;
+    bf.bfSize = 40 + 16 + bmi.biSizeImage;
+    // output the file
+    FILE * file = fopen("a.bmp", "wb");
+    if(file == NULL) return;
+    // file header
+    fwrite(&bf.bfType, 2, 1, file);
+    fwrite(&bf.bfSize, 4, 1, file);
+    fwrite(&bf.bfReserved1, 2, 1, file);
+    fwrite(&bf.bfReserved2, 2, 1, file);
+    fwrite(&bf.bfOffBits, 4, 1, file);
+    // info header
+    fwrite(&bmi.biSize, 4, 1, file);
+    fwrite(&bmi.biWidth, 4, 1, file);
+    fwrite(&bmi.biHeight, 4, 1, file);
+    fwrite(&bmi.biPlanes, 2, 1, file);
+    fwrite(&bmi.biBitCount, 2, 1, file);
+    fwrite(&bmi.biCompression, 4, 1, file);
+    fwrite(&bmi.biSizeImage, 4, 1, file);
+    fwrite(&bmi.biXPelsPerMeter, 4, 1, file);
+    fwrite(&bmi.biYPelsPerMeter, 4, 1, file);
+    fwrite(&bmi.biClrUsed, 4, 1, file);
+    fwrite(&bmi.biClrImportant, 4, 1, file);
+    // pixels
+    fwrite(_data->Pixels, bmi.biSizeImage, 1, file);
+    fclose(file);*/
 }
 
 /*  func    sra_locate_locate_color
@@ -148,6 +181,7 @@ static void sra_locate_refresh(sra_locate_t *self)
  */
 static bool sra_locate_locate_color_rgb(sra_locate_t *self, uint8_t r, uint8_t g, uint8_t b)
 {
+    if(!self) return false; // error precaution
     for(int y = 0; y < _data->Height; y++)
     {
         for(int x = 0; x < _data->Width; x++)
@@ -166,21 +200,49 @@ static bool sra_locate_locate_color_rgb(sra_locate_t *self, uint8_t r, uint8_t g
     return false;
 }
 
+/*  func    sra_locate_get_color_rgb_xy
+ *  desc    get color at x and y coordinate (pixels); normally run after refresh
+ *  return  colors in self->r, self->g, self->b
+ */
+static void sra_locate_get_color_rgb_xy(sra_locate_t *self, int x, int y)
+{
+    if(!self) return;           // error precaution
+    self->r = PosR(self, x, y);
+    self->g = PosG(self, x, y);
+    self->b = PosB(self, x, y);
+    self->a = PosA(self, x, y);
+}
+
+/*  func    sra_locate_get_color_xy
+ *  desc    return a 32 bit color from the coordinate x and y (pixels); normally run after refresh
+ */
+static uint32_t sra_locate_get_color_xy(sra_locate_t *self, int x, int y)
+{
+    if(!self) return 0; // error precaution
+    return ((uint32_t*)_data->Pixels)[(y * _data->Width) + x];
+}
+
 /***********************************/
 /*** HELPER FUNCTION DEFINITIONS ***/
 /***********************************/
 
-static inline uint8_t PosB(sra_locate_t *self, uint8_t x, uint8_t y) 
+// TODO add descriptions and consider error precaution?
+static uint8_t PosB(sra_locate_t *self, int x, int y) 
 {
-    return _data->Pixels[4 * (( y * _data->Width ) + x) + 0];
+    return ((uint8_t*)_data->Pixels)[4 * ((y * _data->Width) + x) + 0];
 }
 
-static inline uint8_t PosG(sra_locate_t *self, uint8_t x, uint8_t y) 
+static uint8_t PosG(sra_locate_t *self, int x, int y) 
 {
-    return _data->Pixels[4 * (( y * _data->Width ) + x) + 1];
+    return ((uint8_t*)_data->Pixels)[4 * ((y * _data->Width) + x) + 1];
 }
 
-static inline uint8_t PosR(sra_locate_t *self, uint8_t x, uint8_t y) 
+static uint8_t PosR(sra_locate_t *self, int x, int y) 
 {
-    return _data->Pixels[4 * (( y * _data->Width ) + x) + 2];
+    return ((uint8_t*)_data->Pixels)[4 * ((y * _data->Width) + x) + 2];
+}
+
+static uint8_t PosA(sra_locate_t *self, int x, int y) 
+{
+    return ((uint8_t*)_data->Pixels)[4 * ((y * _data->Width) + x) + 3];
 }

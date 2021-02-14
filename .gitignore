@@ -1,5 +1,6 @@
 .codelite
 tags
+Makefile
 sra_clicker.workspace
 sra_clicker/Debug
 sra_clicker/Release
@@ -7,3 +8,4 @@ sra_clicker/sra_clicker.mk
 sra_clicker/sra_clicker.project
 sra_clicker/sra_clicker.txt
 sra_clicker/compile_flags.txt
+*.bmp

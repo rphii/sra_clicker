@@ -22,7 +22,7 @@
                 
             }
             
-            // /*
+            // 
             if ((fEatKeystroke = (p->vkCode == 0x41)))  //redirect a to b
             {     
                 printf("Hello a\n");
@@ -47,8 +47,9 @@
     return(fEatKeystroke ? 1 : CallNextHookEx(NULL, nCode, wParam, lParam));
 }*/
 
-//int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
-int main(void)
+
+int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+//int main(void)
 {
     //ShowWindow(FindWindowA("ConsoleWindowClass", NULL), 0);         // hide console
     
@@ -58,6 +59,10 @@ int main(void)
     // create mouse and initialize it
     sra_mouse_t mouse;
     sra_mouse_setup(&mouse);
+    
+    // create locate and initialize it
+    sra_locate_t locate;
+    sra_locate_setup(&locate);
     
     // Keep this app running until we're told to stop
     /*MSG Message;
@@ -81,16 +86,37 @@ int main(void)
     
     
     
-    for(;;)
+    
+    /*for(;;)
     {
         
         for(int i = 0; i < 999999999; i++) {};
         mouse.pressl(&mouse);
         for(int i = 0; i < 999999999; i++) {};
         mouse.releasel(&mouse);
+    }*/
+    
+    
+    
+    for(;;)
+    {
+        for(int i = 0; i < 99999999; i++) {};
+        locate.refresh(&locate);;
+        POINT p;
+        GetCursorPos(&p);
+        
+        bool found = locate.locate_color_rgb(&locate, 244, 129, 185);
+        //bool found = locate.locate_color_rgb(&locate, 0, 0, 255);
+        //bool found = locate.locate_color_rgb(&locate, 255, 255, 255);
+        printf("%s:%d/%d\n", found ? "true" : "false", locate.x, locate.y);
+        
+        
+        //locate.get_color_rgb_xy(&locate, p.x, p.y);
+        //uint32_t col = locate.get_color_xy(&locate, p.x, p.y);
+        //printf("%d/%d:%d,%d,%d|%x\n", p.x, p.y, locate.r, locate.g, locate.b, col);
+        
+        //printf("%d/%d:%x\n", p.x, p.y, col);
     }
-    
-    
     
     
     
