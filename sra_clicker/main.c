@@ -80,8 +80,6 @@ int main(void)
     //mouse.clickl_xy(&mouse, 1000, 1000);
     
     
-    
-    
     for(;;)
     {
         
