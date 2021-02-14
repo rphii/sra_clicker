@@ -3,6 +3,22 @@
 
 #include "main.h"
 
+/****************************/
+/*** ENUMERATION TYPEDEFS ***/
+/****************************/
+
+typedef enum
+{
+    ROUTINE_CLICKL,
+    ROUTINE_CLICKL_XY,
+    ROUTINE_MOVE_XY,
+    ROUTINE_PRESSL,
+    ROUTINE_RELEASEL,
+    // below one has to stay the last at all costs
+    ROUTINE_COUNT
+}
+sra_mouse_routines_t;
+
 /***********************/
 /*** MOUSE STRUCTURE ***/
 /***********************/

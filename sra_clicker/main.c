@@ -95,6 +95,14 @@ int main(void)
     
     
     
+    /*
+    for(;;)
+    {
+        for(int i = 0; i < 999999999; i++) {};
+        mouse.clickl_xy(&mouse, 60000, 60000);
+    }*/
+    
+    
     
     
     /*

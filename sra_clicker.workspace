@@ -5,9 +5,11 @@
     <WorkspaceConfiguration Name="Debug" Selected="yes">
       <Environment/>
       <Project Name="sra_clicker" ConfigName="Debug"/>
+      <Project Name="sra_clicker" ConfigName="Debug"/>
     </WorkspaceConfiguration>
     <WorkspaceConfiguration Name="Release" Selected="yes">
       <Environment/>
+      <Project Name="sra_clicker" ConfigName="Release"/>
       <Project Name="sra_clicker" ConfigName="Release"/>
     </WorkspaceConfiguration>
   </BuildMatrix>

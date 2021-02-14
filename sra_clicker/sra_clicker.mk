@@ -3,10 +3,10 @@
 ## any manual changes will be erased      
 ##
 ## Debug
-ProjectName            :=005_Autoclicker_test
+ProjectName            :=sra_clicker
 ConfigurationName      :=Debug
-WorkspacePath          :=C:/dev/c/c
-ProjectPath            :=C:/dev/c/c/005_Autoclicker_test
+WorkspacePath          :=C:/dev/c/sra_clicker
+ProjectPath            :=C:/dev/c/sra_clicker/sra_clicker
 IntermediateDirectory  :=$(ConfigurationName)
 OutDir                 := $(IntermediateDirectory)
 CurrentFileName        :=
@@ -32,7 +32,7 @@ Preprocessors          :=
 ObjectSwitch           :=-o 
 ArchiveOutputSwitch    := 
 PreprocessOnlySwitch   :=-E
-ObjectsFileList        :="005_Autoclicker_test.txt"
+ObjectsFileList        :="sra_clicker.txt"
 PCHCompileFlags        :=
 MakeDirCommand         :=makedir
 RcCmpOptions           := 
@@ -98,19 +98,19 @@ PreBuild:
 ##
 $(IntermediateDirectory)/main.c$(ObjectSuffix): main.c
 	@$(CC) $(CFLAGS) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/main.c$(ObjectSuffix) -MF$(IntermediateDirectory)/main.c$(DependSuffix) -MM main.c
-	$(CC) $(SourceSwitch) "C:/dev/c/c/005_Autoclicker_test/main.c" $(CFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/main.c$(ObjectSuffix) $(IncludePath)
+	$(CC) $(SourceSwitch) "C:/dev/c/sra_clicker/sra_clicker/main.c" $(CFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/main.c$(ObjectSuffix) $(IncludePath)
 $(IntermediateDirectory)/main.c$(PreprocessSuffix): main.c
 	$(CC) $(CFLAGS) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/main.c$(PreprocessSuffix) main.c
 
 $(IntermediateDirectory)/keyboard.c$(ObjectSuffix): keyboard.c
 	@$(CC) $(CFLAGS) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/keyboard.c$(ObjectSuffix) -MF$(IntermediateDirectory)/keyboard.c$(DependSuffix) -MM keyboard.c
-	$(CC) $(SourceSwitch) "C:/dev/c/c/005_Autoclicker_test/keyboard.c" $(CFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/keyboard.c$(ObjectSuffix) $(IncludePath)
+	$(CC) $(SourceSwitch) "C:/dev/c/sra_clicker/sra_clicker/keyboard.c" $(CFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/keyboard.c$(ObjectSuffix) $(IncludePath)
 $(IntermediateDirectory)/keyboard.c$(PreprocessSuffix): keyboard.c
 	$(CC) $(CFLAGS) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/keyboard.c$(PreprocessSuffix) keyboard.c
 
 $(IntermediateDirectory)/mouse.c$(ObjectSuffix): mouse.c
 	@$(CC) $(CFLAGS) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/mouse.c$(ObjectSuffix) -MF$(IntermediateDirectory)/mouse.c$(DependSuffix) -MM mouse.c
-	$(CC) $(SourceSwitch) "C:/dev/c/c/005_Autoclicker_test/mouse.c" $(CFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/mouse.c$(ObjectSuffix) $(IncludePath)
+	$(CC) $(SourceSwitch) "C:/dev/c/sra_clicker/sra_clicker/mouse.c" $(CFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/mouse.c$(ObjectSuffix) $(IncludePath)
 $(IntermediateDirectory)/mouse.c$(PreprocessSuffix): mouse.c
 	$(CC) $(CFLAGS) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/mouse.c$(PreprocessSuffix) mouse.c
 
