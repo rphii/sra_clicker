@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CodeLite_Workspace Name="sra_clicker" Database="" Version="10000">
-  <Project Name="sra_clicker" Path="005_Autoclicker_test/005_Autoclicker_test.project" Active="Yes"/>
+  <Project Name="sra_clicker" Path="sra_clicker/sra_clicker.project" Active="Yes"/>
   <BuildMatrix>
     <WorkspaceConfiguration Name="Debug" Selected="yes">
       <Environment/>
