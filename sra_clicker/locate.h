@@ -14,8 +14,8 @@ typedef struct sra_locate_s
     
     // variables
     void *data;     // private data
-    uint8_t x;      // x position ("return" value of some function)
-    uint8_t y;      // y position,  "
+    int x;      // x position ("return" value of some function)
+    int y;      // y position,  "
     uint8_t a;      // alpha value, "
     uint8_t r;      // red value,   "
     uint8_t g;      // green value, "

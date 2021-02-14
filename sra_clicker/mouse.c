@@ -21,13 +21,15 @@ sra_mouse_routine_t;
 
 typedef struct
 {
-    // TODO I don't like this structure, nest it further?
-    sra_mouse_routine_t routines[ROUTINE_COUNT];
-    /*INPUT clickl[2];
-    INPUT clickl_xy[3];
-    INPUT move_xy[1];
-    INPUT pressl[1];
-    INPUT releasel[1];*/
+    sra_mouse_routine_t routines[ROUTINE_COUNT];    // mouse routines like click, move, press, ...
+    
+    struct
+    {
+        int width;
+        int height;
+    }
+    screen;
+    
 }
 sra_mouse_data_t;
 
@@ -41,6 +43,7 @@ static void sra_mouse_clickl_xy(sra_mouse_t *self, int x, int y);
 static void sra_mouse_move_xy(sra_mouse_t *self, int x, int y);
 static void sra_mouse_pressl(sra_mouse_t *self);
 static void sra_mouse_releasel(sra_mouse_t *self);
+static void sra_mouse_update_dimensions(sra_mouse_t *self);
 
 /**********************************/
 /*** HELPER FUNCTION PROTOTYPES ***/
@@ -95,6 +98,10 @@ void sra_mouse_setup(sra_mouse_t *self)
     self->move_xy = sra_mouse_move_xy;
     self->pressl = sra_mouse_pressl;
     self->releasel = sra_mouse_releasel;
+    self->update_dimensions = sra_mouse_update_dimensions;
+    
+    // finish initialization
+    self->update_dimensions(self);
 }
 
 /*  func    sra_mouse_free
@@ -143,16 +150,18 @@ static void sra_mouse_clickl(sra_mouse_t *self)
 }
 
 /*  func    sra_mouse_clickl_xy
- *  desc    performs a left mouse click at the given coordinates.
- *          0,0 is top left
- *          65535,65535 is bottom right
+ *  desc    performs a left mouse click at the given coordinates in
+ *          pixels; 0,0 is top left; width,height is bottom right
  */
 static void sra_mouse_clickl_xy(sra_mouse_t *self, int x, int y)
 {
     if(self->data)
     {
-        _data->routines[ROUTINE_CLICKL_XY].input[0].mi.dx = x;  // TODO magic numbers
-        _data->routines[ROUTINE_CLICKL_XY].input[0].mi.dy = y;
+        _data->routines[ROUTINE_CLICKL_XY].input[0].mi.dx = (65535 * x) / _data->screen.width;    // TODO magic numbers
+        _data->routines[ROUTINE_CLICKL_XY].input[0].mi.dy = (65535 * y) / _data->screen.height;   // TODO magic numbers
+        
+        //_data->routines[ROUTINE_CLICKL_XY].input[0].mi.dx = x;  // TODO magic numbers
+        //_data->routines[ROUTINE_CLICKL_XY].input[0].mi.dy = y;
         SendInput(_data->routines[ROUTINE_CLICKL_XY].count, _data->routines[ROUTINE_CLICKL_XY].input, sizeof(INPUT));
     }
 }
@@ -202,6 +211,8 @@ static void sra_mouse_releasel(sra_mouse_t *self)
  */
 static void sra_mouse_initialize_routine(sra_mouse_routine_t *routine, int count)
 {
+    if(!routine) return;    // error precaution
+    
     routine->input = (INPUT*)malloc(sizeof(INPUT) * count);
     if(routine->input)
     {
@@ -225,4 +236,21 @@ static void sra_mouse_initialize_routine(sra_mouse_routine_t *routine, int count
     {
         routine->count = 0;
     }
+}
+
+static void sra_mouse_update_dimensions(sra_mouse_t *self)
+{
+    if(!self) return;   // error precaution
+    
+    // https://stackoverflow.com/questions/8690619/how-to-get-screen-resolution-in-c
+    RECT desktop;
+    // Get a handle to the desktop window
+    const HWND hDesktop = GetDesktopWindow();
+    // Get the size of screen to the variable desktop
+    GetWindowRect(hDesktop, &desktop);
+    // The top left corner will have coordinates (0,0)
+    // and the bottom right corner will have coordinates
+    // (horizontal, vertical)
+    _data->screen.width = desktop.right - desktop.left;
+    _data->screen.height = desktop.bottom - desktop.top;
 }

@@ -100,15 +100,17 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     
     for(;;)
     {
-        for(int i = 0; i < 99999999; i++) {};
+        for(int i = 0; i < 999999999; i++) {};
         locate.refresh(&locate);;
         POINT p;
         GetCursorPos(&p);
         
-        bool found = locate.locate_color_rgb(&locate, 244, 129, 185);
-        //bool found = locate.locate_color_rgb(&locate, 0, 0, 255);
-        //bool found = locate.locate_color_rgb(&locate, 255, 255, 255);
+        bool found = locate.locate_color_rgb(&locate, 132, 161, 249);
         printf("%s:%d/%d\n", found ? "true" : "false", locate.x, locate.y);
+        if(found)
+        {
+            mouse.clickl_xy(&mouse, locate.x, locate.y);
+        }
         
         
         //locate.get_color_rgb_xy(&locate, p.x, p.y);

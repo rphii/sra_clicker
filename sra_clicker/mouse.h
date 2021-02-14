@@ -39,6 +39,7 @@ typedef struct sra_mouse_s
     void (*pressl)(sra_mouse_t *self);
     void (*releasel)(sra_mouse_t *self);
     void (*refresh_wh)(sra_mouse_t *self);
+    void (*update_dimensions)(sra_mouse_t* self);
     
     // undo readability
     #undef sra_mouse_t
