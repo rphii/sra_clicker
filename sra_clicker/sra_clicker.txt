@@ -1,1 +1,1 @@
-Debug/main.c.o Debug/keyboard.c.o Debug/mouse.c.o   
+Release/main.c.o Release/keyboard.c.o Release/mouse.c.o   
