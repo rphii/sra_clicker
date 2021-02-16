@@ -2,22 +2,23 @@
 WIP clicker application programmed in C for Windows.
 ## Implemented
 ### Mouse
-* Left clicking at xy coordinates
-* Left pressing at mouse position
-* Left releasing
-* Move mouse to xy coordinates
-* Move mouse by xy pixels
+* ´mouse.clickl_xy(&mouse, x, y)´ Left clicking at xy coordinates
+* ´mouse.clickl(&mouse, x, y)´ Left pressing at mouse position
+* ´mouse.releasel(&mouse)´ Left releasing
+* ´mouse.clickl_xy(&mouse, x, y)´ Move mouse to xy coordinates
+* ´mouse.clickl_xy(&mouse, x, y)´ Move mouse by xy pixels
 ### Keyboard
 * ...
 ### Locate
-* Refresh; makes a screenshot and stores it in a buffer to later retrieve (A)RGB data
-* Locate color; locate a color in the buffer. Searches from left to right and top to bottom
-* From the buffer retrieve a pixels ARGB values seperately
-* From the buffer retrieve a pixels ARGB value at once
+* ´locate.refresh(&locate)´ Refresh; makes a screenshot and stores it in a buffer to later retrieve (A)RGB data
+* ´locate.locate_color_rgb(&locate, r, g, b)´ Locate color; locate a RGB color in the buffer. Searches from left to right and top to bottom
+* ´locate.get_color_rgb_xy(&locate, x, y)´ From the buffer retrieve a pixels ARGB values seperately
+* ´locate.get_color_xy(&locate, x, y)´ From the buffer retrieve a pixels ARGB value at once
 ## Planned
 ### Mouse
 * Left pressing at xy coordinates
 * Add control for right mouse button aswell
+* Make movement speed choosable/not instant
 * ...
 ### Keyboard
 * Control the application with the keyboard (start/stop clicker)
