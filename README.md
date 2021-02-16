@@ -1,5 +1,5 @@
 # sra_clicker
-WIP clicker application programmed in C for Windows.
+WIP (auto) clicker application / program programmed in C for Windows.
 ## Implemented
 ### Mouse
 * `sra_mouse_setup(&mouse)` Set up the mouse
