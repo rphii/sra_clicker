@@ -1,7 +1,5 @@
 # sra_clicker
----
-WIP clicker in C for Windows.
----
+WIP clicke application programmed in C for Windows.
 ## Implemented
 ### Mouse
 * Left clicking at xy coordinates
@@ -10,7 +8,7 @@ WIP clicker in C for Windows.
 * Moving to xy coordinates
 * Moving by xy pixels
 ### Keyboard
-* -
+* ...
 ### Locate
 * Refresh; makes a screenshot and stores it in a buffer to later retrieve (A)RGB data
 * Locate color; locate a color in the buffer. Searches from left to right and top to bottom
