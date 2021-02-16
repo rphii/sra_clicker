@@ -5,8 +5,8 @@ WIP clicker application programmed in C for Windows.
 * Left clicking at xy coordinates
 * Left pressing at mouse position
 * Left releasing
-* Moving to xy coordinates
-* Moving by xy pixels
+* Move mouse to xy coordinates
+* Move mouse by xy pixels
 ### Keyboard
 * ...
 ### Locate
