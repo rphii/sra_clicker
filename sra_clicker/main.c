@@ -97,19 +97,40 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     }*/
     
     
+    bool found = false;
     
     for(;;)
     {
-        for(int i = 0; i < 999999999; i++) {};
-        locate.refresh(&locate);;
-        POINT p;
-        GetCursorPos(&p);
+        //for(int i = 0; i < 999999; i++) {};
         
-        bool found = locate.locate_color_rgb(&locate, 132, 161, 249);
-        printf("%s:%d/%d\n", found ? "true" : "false", locate.x, locate.y);
+        locate.refresh(&locate);
+        
+        //found = locate.locate_color_rgb(&locate, 191, 226, 255);    // bright blue
+        found = locate.locate_color_rgb(&locate, 108, 131, 224);    // desaturated blue
         if(found)
         {
+            mouse.move_xy(&mouse, locate.x, locate.y);
+            //mouse.pressl(&mouse);
             mouse.clickl_xy(&mouse, locate.x, locate.y);
+        }
+        else
+        {
+            locate.refresh(&locate);
+            found = locate.locate_color_rgb(&locate, 130, 169, 252);    // darker blue
+            if(found)
+            {
+                mouse.move_xy(&mouse, locate.x, locate.y);
+                //mouse.pressl(&mouse);
+                mouse.clickl_xy(&mouse, locate.x, locate.y);
+            }
+            else
+            {
+//                found = locate.locate_color_rgb(&locate, 206, 51, 28);  // red
+//                if(found)
+//                {
+//                    mouse.clickl_xy(&mouse, locate.x, locate.y);
+//                }
+            }
         }
         
         
@@ -165,8 +186,8 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 break;
         }
         for(int i = 0; i < interval; i++) {};
-    }*/
-    
+    }
+    */
     //UnhookWindowsHookEx(hhkLowLevelKybd);
     
     sra_mouse_free(&mouse);

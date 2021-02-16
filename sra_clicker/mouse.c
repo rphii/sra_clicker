@@ -40,10 +40,11 @@ sra_mouse_data_t;
 static void sra_mouse_initialize(sra_mouse_t *self);
 static void sra_mouse_clickl(sra_mouse_t *self);
 static void sra_mouse_clickl_xy(sra_mouse_t *self, int x, int y);
-static void sra_mouse_move_xy(sra_mouse_t *self, int x, int y);
+static void sra_mouse_move(sra_mouse_t *self, int x, int y);
 static void sra_mouse_pressl(sra_mouse_t *self);
 static void sra_mouse_releasel(sra_mouse_t *self);
 static void sra_mouse_update_dimensions(sra_mouse_t *self);
+static void sra_mouse_move_xy(sra_mouse_t *self, int x, int y);
 
 /**********************************/
 /*** HELPER FUNCTION PROTOTYPES ***/
@@ -80,8 +81,8 @@ void sra_mouse_setup(sra_mouse_t *self)
     _data->routines[ROUTINE_CLICKL_XY].input[2].mi.dwFlags = MOUSEEVENTF_LEFTUP;
     
     // configure the move_xy inside data
-    sra_mouse_initialize_routine(&(_data->routines[ROUTINE_MOVE_XY]), 1);
-    _data->routines[ROUTINE_MOVE_XY].input[0].mi.dwFlags = MOUSEEVENTF_MOVE;
+    sra_mouse_initialize_routine(&(_data->routines[ROUTINE_MOVE]), 1);
+    _data->routines[ROUTINE_MOVE].input[0].mi.dwFlags = MOUSEEVENTF_MOVE;
     
     // configure the pressl inside data
     sra_mouse_initialize_routine(&(_data->routines[ROUTINE_PRESSL]), 1);
@@ -91,14 +92,19 @@ void sra_mouse_setup(sra_mouse_t *self)
     sra_mouse_initialize_routine(&(_data->routines[ROUTINE_RELEASEL]), 1);
     _data->routines[ROUTINE_RELEASEL].input[0].mi.dwFlags = MOUSEEVENTF_LEFTUP;
     
+    // configure the move_xy inside data
+    sra_mouse_initialize_routine(&(_data->routines[ROUTINE_MOVE_XY]), 1);
+    _data->routines[ROUTINE_MOVE_XY].input[0].mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE | 0x4000; // 0x4000 is MOUSEEVENTF_VIRTUALDESK
+    
     // assign functions
     self->initialize = sra_mouse_initialize;
     self->clickl = sra_mouse_clickl;
     self->clickl_xy = sra_mouse_clickl_xy;
-    self->move_xy = sra_mouse_move_xy;
+    self->move = sra_mouse_move;
     self->pressl = sra_mouse_pressl;
     self->releasel = sra_mouse_releasel;
     self->update_dimensions = sra_mouse_update_dimensions;
+    self->move_xy = sra_mouse_move_xy;
     
     // finish initialization
     self->update_dimensions(self);
@@ -166,11 +172,11 @@ static void sra_mouse_clickl_xy(sra_mouse_t *self, int x, int y)
     }
 }
 
-/*  func    sra_mouse_move_xy
+/*  func    sra_mouse_move
  *  desc    moves the mouse by the specifiec x and y in pixels. Positive values move 
  *          the mouse right/down and negative values left/up
  */
-static void sra_mouse_move_xy(sra_mouse_t *self, int x, int y)
+static void sra_mouse_move(sra_mouse_t *self, int x, int y)
 {
     if(self->data)
     {
@@ -201,6 +207,23 @@ static void sra_mouse_releasel(sra_mouse_t *self)
         SendInput(_data->routines[ROUTINE_RELEASEL].count, _data->routines[ROUTINE_RELEASEL].input, sizeof(INPUT));
     }
 }
+
+/*  func    static void sra_mouse_move_xy(sra_mouse_t *self, int x, int y);
+ *  desc    move the mouse to the specified coordinates (pixels)
+ *          0,0 is top left
+ *          width,height is bottom right
+ */
+static void sra_mouse_move_xy(sra_mouse_t *self, int x, int y)
+{
+    if(self->data)
+    {
+        _data->routines[ROUTINE_MOVE_XY].input[0].mi.dx = (65535 * x) / _data->screen.width;    // TODO magic numbers
+        _data->routines[ROUTINE_MOVE_XY].input[0].mi.dy = (65535 * y) / _data->screen.height;   // TODO magic numbers
+        
+        SendInput(_data->routines[ROUTINE_MOVE_XY].count, _data->routines[ROUTINE_MOVE_XY].input, sizeof(INPUT));
+    }
+}
+
 
 /***********************************/
 /*** HELPER FUNCTION DEFINITIONS ***/
