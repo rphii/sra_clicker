@@ -10,7 +10,7 @@ WIP clicker application programmed in C for Windows.
 * `mouse.releasel(&mouse)` Left releasing
 * `mouse.clickl_xy(&mouse, x, y)` Move mouse to xy coordinates
 * `mouse.clickl_xy(&mouse, x, y)` Move mouse by xy pixels
-* (`mouse.update_dimensions(&mouse, x, y)` refresh width and height information of monitor. Usually called when initializing)
+* (`mouse.update_dimensions(&mouse)` refresh width and height information of monitor. Usually called when initializing)
 ### Keyboard
 * ...
 ### Locate
