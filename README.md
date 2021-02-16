@@ -39,4 +39,5 @@ WIP (auto) clicker application / program programmed in C for Windows.
 * And thus also be loaded from a file
 * furthermore, when starting the application, the user shall choose which procedure to run
 
+Compiling with MingW (Version?)
 16.02.2021
