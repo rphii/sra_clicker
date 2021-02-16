@@ -1,7 +1,7 @@
 #ifndef LOCATE_H
 #define LOCATE_H
 
-#include "main.h"
+#include "sra_clicker.h"
 
 /************************/
 /*** LOCATE STRUCTURE ***/

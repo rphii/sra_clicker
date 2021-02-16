@@ -1,5 +1,5 @@
 
-#include "main.h"
+#include "sra_clicker.h"
 
 /*******************/
 /*** DEFINITIONS ***/

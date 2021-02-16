@@ -1,7 +1,7 @@
 #ifndef MOUSE_H
 #define MOUSE_H
 
-#include "main.h"
+#include "sra_clicker.h"
 
 /****************************/
 /*** ENUMERATION TYPEDEFS ***/

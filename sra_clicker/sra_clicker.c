@@ -1,5 +1,5 @@
 
-#include "main.h"
+#include "sra_clicker.h"
 
 /*LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
