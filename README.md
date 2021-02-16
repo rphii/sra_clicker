@@ -1,5 +1,5 @@
 # sra_clicker
-WIP clicke application programmed in C for Windows.
+WIP clicker application programmed in C for Windows.
 ## Implemented
 ### Mouse
 * Left clicking at xy coordinates
