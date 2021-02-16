@@ -6,7 +6,7 @@ WIP clicker application programmed in C for Windows.
 * `sra_mouse_free(&mouse)` Free the memory of the mouse
 * `mouse.setup(&mouse)` (Re)Initialize the mouse
 * `mouse.clickl_xy(&mouse, x, y)` Left clicking at xy coordinates
-* `mouse.clickl(&mouse, x, y)` Left pressing at mouse position
+* `mouse.clickl(&mouse)` Left pressing at mouse position
 * `mouse.releasel(&mouse)` Left releasing
 * `mouse.clickl_xy(&mouse, x, y)` Move mouse to xy coordinates
 * `mouse.clickl_xy(&mouse, x, y)` Move mouse by xy pixels
