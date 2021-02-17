@@ -63,7 +63,7 @@ static void sra_mouse_initialize_routine(sra_mouse_routine_t *routine, int count
 void sra_mouse_setup(sra_mouse_t *self)
 {
     // allocate data memory
-    self->data = (void*)malloc(sizeof(sra_mouse_data_t));
+    self->data = malloc(sizeof(sra_mouse_data_t));
     if(!self->data)
     {
         return;
@@ -166,8 +166,6 @@ static void sra_mouse_clickl_xy(sra_mouse_t *self, int x, int y)
         _data->routines[ROUTINE_CLICKL_XY].input[0].mi.dx = (65535 * x) / _data->screen.width;    // TODO magic numbers
         _data->routines[ROUTINE_CLICKL_XY].input[0].mi.dy = (65535 * y) / _data->screen.height;   // TODO magic numbers
         
-        //_data->routines[ROUTINE_CLICKL_XY].input[0].mi.dx = x;  // TODO magic numbers
-        //_data->routines[ROUTINE_CLICKL_XY].input[0].mi.dy = y;
         SendInput(_data->routines[ROUTINE_CLICKL_XY].count, _data->routines[ROUTINE_CLICKL_XY].input, sizeof(INPUT));
     }
 }
@@ -236,7 +234,7 @@ static void sra_mouse_initialize_routine(sra_mouse_routine_t *routine, int count
 {
     if(!routine) return;    // error precaution
     
-    routine->input = (INPUT*)malloc(sizeof(INPUT) * count);
+    routine->input = malloc(sizeof *routine->input * count);
     if(routine->input)
     {
         // successful allocation

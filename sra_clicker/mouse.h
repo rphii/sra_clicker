@@ -43,6 +43,9 @@ typedef struct sra_mouse_s
     void (*update_dimensions)(sra_mouse_t* self);
     void (*move_xy)(sra_mouse_t *self, int x, int y);
     
+    // TODO add these
+    //(*scroll)
+    
     // undo readability
     #undef sra_mouse_t
 }

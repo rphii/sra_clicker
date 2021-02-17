@@ -81,6 +81,31 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     }*/
     
     
+    locate.refresh(&locate);
+    // TODO add this thing to locate.c/h, but add it good
+    for(;;)
+    {
+        HWND handle = FindWindow(NULL, L"Rechner");
+        //HWND handle = FindWindowA(NULL, "Rechner");
+        RECT rect;
+        if(GetWindowRect(handle, &rect))
+        {
+            if(handle == GetForegroundWindow())
+            {
+                printf("%4d/%4d;%4d/%4d\n", rect.left, rect.top, rect.right, rect.bottom);
+            }
+            else
+            {
+                printf("window not active\n");
+            }
+        }
+        else
+        {
+            printf("window not found\n");
+        }
+    }
+    
+    
     //for(int i = 0; i < 999999999; i++) {};
     //mouse.clickl_xy(&mouse, 1000, 1000);
     

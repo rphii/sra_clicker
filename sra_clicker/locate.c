@@ -31,6 +31,8 @@ static bool sra_locate_locate_color_rgb(sra_locate_t *self, uint8_t r, uint8_t g
 static void sra_locate_get_color_rgb_xy(sra_locate_t *self, int x, int y);
 static uint32_t sra_locate_get_color_xy(sra_locate_t *self, int x, int y);
 
+//static 
+
 /**********************************/
 /*** HELPER FUNCTION PROTOTYPES ***/
 /**********************************/
@@ -52,8 +54,8 @@ void sra_locate_setup(sra_locate_t *self)
     if(!self) return;   // error precaution
     
     // allocate data memory
-    self->data = (void*)malloc(sizeof(sra_locate_data_t*));
-    if(!self->data) return; // error precaution
+    self->data = malloc(sizeof(sra_locate_data_t));
+    if(!self->data) return; // error precaution TODO add logging
     
     // initialize publics with 0
     self->x = 0;
@@ -130,10 +132,7 @@ static void sra_locate_refresh(sra_locate_t *self)
     {
         free(_data->Pixels);
     }
-    _data->Pixels = (BYTE*)malloc(4 * _data->Width * _data->Height);
-    //if(ScreenData)
-    //    free(ScreenData);
-    //ScreenData = (BYTE*)malloc(4 * _data->Width * _data->Height);
+    _data->Pixels = malloc(sizeof *_data->Pixels * 4 * _data->Width * _data->Height);
     
     GetDIBits(hdcMem, hBitmap, 0, _data->Height, _data->Pixels, (BITMAPINFO*)&bmi, DIB_RGB_COLORS);
     
