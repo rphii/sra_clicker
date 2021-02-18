@@ -41,15 +41,16 @@ static void sra_locate_get_color_rgb_xy(sra_locate_t *self, int x, int y);
 static uint32_t sra_locate_get_color_xy(sra_locate_t *self, int x, int y);
 static bool sra_locate_save_bmp(sra_locate_t *self, char *Filename);
 static bool sra_locate_restrict_window(sra_locate_t *self, char *Window);
+static bool sra_locate_locate_color(sra_locate_t *self, uint32_t Color);
 
 /**********************************/
 /*** HELPER FUNCTION PROTOTYPES ***/
 /**********************************/
 
-static uint8_t PosB(sra_locate_t *self, int x, int y);
-static uint8_t PosR(sra_locate_t *self, int x, int y);
-static uint8_t PosG(sra_locate_t *self, int x, int y);
-static uint8_t PosA(sra_locate_t *self, int x, int y);
+static inline uint8_t PosB(sra_locate_t *self, int x, int y);
+static inline uint8_t PosR(sra_locate_t *self, int x, int y);
+static inline uint8_t PosG(sra_locate_t *self, int x, int y);
+static inline uint8_t PosA(sra_locate_t *self, int x, int y);
 
 /***********************************/
 /*** PUBLIC FUNCTION DEFINITIONS ***/
@@ -105,6 +106,7 @@ void sra_locate_setup(sra_locate_t *self)
     self->get_color_xy = sra_locate_get_color_xy;
     self->save_bmp = sra_locate_save_bmp;
     self->restrict_window = sra_locate_restrict_window;
+    self->locate_color = sra_locate_locate_color;
 }
 
 /*  func    sra_locate_free
@@ -267,7 +269,6 @@ static void sra_locate_get_color_rgb_xy(sra_locate_t *self, int x, int y)
     self->r = PosR(self, x, y);
     self->g = PosG(self, x, y);
     self->b = PosB(self, x, y);
-    self->a = PosA(self, x, y);
 }
 
 /*  func    sra_locate_get_color_xy
@@ -355,27 +356,54 @@ static bool sra_locate_restrict_window(sra_locate_t *self, char *Window)
     return true;
 }
 
+/*  func    sra_locate_locate_color
+ *  desc    locate a color off of a 32 bit color
+ */
+static bool sra_locate_locate_color(sra_locate_t *self, uint32_t Color)
+{
+    // error precaution
+    if(!self) return false;             // is there a struct?
+    if(!_data->Pixels) return false;    // is there an image?
+    
+    // locate pixel
+    for(int y = 0; y < _data->Height; y++)
+    {
+        for(int x = 0; x < _data->Width; x++)
+        {
+            if(((uint32_t*)_data->Pixels)[(y * _data->Width) + x] == Color)
+            {
+                // color was found
+                self->x = x + _data->OffsX;
+                self->y = y + _data->OffsY;
+                return true;
+            }
+        }
+    }
+    
+    return false;
+}
+
 /***********************************/
 /*** HELPER FUNCTION DEFINITIONS ***/
 /***********************************/
 
 // TODO add descriptions and consider error precaution?
-static uint8_t PosB(sra_locate_t *self, int x, int y) 
+static inline uint8_t PosB(sra_locate_t *self, int x, int y) 
 {
     return ((uint8_t*)_data->Pixels)[4 * ((y * _data->Width) + x) + 0];
 }
 
-static uint8_t PosG(sra_locate_t *self, int x, int y) 
+static inline uint8_t PosG(sra_locate_t *self, int x, int y) 
 {
     return ((uint8_t*)_data->Pixels)[4 * ((y * _data->Width) + x) + 1];
 }
 
-static uint8_t PosR(sra_locate_t *self, int x, int y) 
+static inline uint8_t PosR(sra_locate_t *self, int x, int y) 
 {
     return ((uint8_t*)_data->Pixels)[4 * ((y * _data->Width) + x) + 2];
 }
 
-static uint8_t PosA(sra_locate_t *self, int x, int y) 
+static inline uint8_t PosA(sra_locate_t *self, int x, int y) 
 {
     return ((uint8_t*)_data->Pixels)[4 * ((y * _data->Width) + x) + 3];
 }

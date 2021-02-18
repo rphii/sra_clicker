@@ -132,14 +132,16 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     bool found = false;
     locate.restrict_window(&locate, "Bluestacks");
     
-    for(int i = 0; i < 1000; i++)
+    for(int i = 0; i < 10000; i++)
+    //for(;;)
     {
         //for(int i = 0; i < 999999; i++) {};
         
         locate.refresh(&locate);
         
         //found = locate.locate_color_rgb(&locate, 191, 226, 255);    // bright blue
-        found = locate.locate_color_rgb(&locate, 108, 131, 224);    // desaturated blue
+        //found = locate.locate_color_rgb(&locate, 108, 131, 224);    // desaturated blue
+        found = locate.locate_color(&locate, 0xff6c83e0);    // desaturated blue
         if(found)
         {
             mouse.move_xy(&mouse, locate.x, locate.y);
@@ -149,7 +151,8 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         else
         {
             locate.refresh(&locate);
-            found = locate.locate_color_rgb(&locate, 130, 169, 252);    // darker blue
+            //found = locate.locate_color_rgb(&locate, 130, 169, 252);    // darker blue
+            found = locate.locate_color(&locate, 0xff82a9fc);    // darker blue
             if(found)
             {
                 mouse.move_xy(&mouse, locate.x, locate.y);

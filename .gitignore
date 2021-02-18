@@ -8,4 +8,5 @@ sra_clicker/sra_clicker.mk
 sra_clicker/sra_clicker.project
 sra_clicker/sra_clicker.txt
 sra_clicker/compile_flags.txt
+sra_clicker/prof
 *.bmp
