@@ -80,8 +80,15 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         }
     }*/
     
-    
+    /*locate.restrict_window(&locate, "Bluestacks");
     locate.refresh(&locate);
+    locate.save_bmp(&locate, "image.bmp");
+    for(;;)
+    {
+    }*/
+    
+    
+    /*locate.refresh(&locate);
     // TODO add this thing to locate.c/h, but add it good
     for(;;)
     {
@@ -103,7 +110,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         {
             printf("window not found\n");
         }
-    }
+    }*/
     
     
     //for(int i = 0; i < 999999999; i++) {};
@@ -123,8 +130,9 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     
     
     bool found = false;
+    locate.restrict_window(&locate, "Bluestacks");
     
-    for(;;)
+    for(int i = 0; i < 1000; i++)
     {
         //for(int i = 0; i < 999999; i++) {};
         

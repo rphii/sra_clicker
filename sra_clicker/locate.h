@@ -20,13 +20,14 @@ typedef struct sra_locate_s
     uint8_t r;      // red value,   "
     uint8_t g;      // green value, "
     uint8_t b;      // blue v alue, "
-    char *Window;   // restricted window; NULL = everything
     
     // functions
-    void (*refresh)(sra_locate_t *self);
+    bool (*refresh)(sra_locate_t *self);
     bool (*locate_color_rgb)(sra_locate_t *self, uint8_t r, uint8_t g, uint8_t b);  // TODO respect valid_window, only take screenshot of valid_window
     void (*get_color_rgb_xy)(sra_locate_t *self, int x, int y);
     uint32_t (*get_color_xy)(sra_locate_t *self, int x, int y);
+    bool (*save_bmp)(sra_locate_t *self, char *Filename);
+    bool (*restrict_window)(sra_locate_t *self, char *Window);
     
     //void (*restrict_window)(sra_locate_t *self, char *Window);
     //void (*focus_window)(sra_locate_t *self, char *Window);
