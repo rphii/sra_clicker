@@ -144,31 +144,37 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         found = locate.locate_color(&locate, 0xff6c83e0);    // desaturated blue
         if(found)
         {
-            mouse.move_xy(&mouse, locate.x, locate.y);
+            //printf("1");
+            //mouse.move_xy(&mouse, locate.x, locate.y);
             //mouse.pressl(&mouse);
             mouse.clickl_xy(&mouse, locate.x, locate.y);
         }
-        else
+        locate.refresh(&locate);
+        //found = locate.locate_color_rgb(&locate, 130, 169, 252);    // darker blue
+        found = locate.locate_color(&locate, 0xff82a9fc);    // darker blue
+        if(found)
         {
-            locate.refresh(&locate);
-            //found = locate.locate_color_rgb(&locate, 130, 169, 252);    // darker blue
-            found = locate.locate_color(&locate, 0xff82a9fc);    // darker blue
-            if(found)
-            {
-                mouse.move_xy(&mouse, locate.x, locate.y);
-                //mouse.pressl(&mouse);
-                mouse.clickl_xy(&mouse, locate.x, locate.y);
-            }
-            else
-            {
-//                found = locate.locate_color_rgb(&locate, 206, 51, 28);  // red
-//                if(found)
-//                {
-//                    mouse.clickl_xy(&mouse, locate.x, locate.y);
-//                }
-            }
+            //printf("2");
+            //mouse.move_xy(&mouse, locate.x, locate.y);
+            //mouse.pressl(&mouse);
+            mouse.clickl_xy(&mouse, locate.x, locate.y);
         }
         
+        locate.refresh(&locate);
+        found = locate.locate_color(&locate, 0xffb8dbff);    // bright blue
+        if(found)
+        {
+            //printf("3");
+            mouse.clickl_xy(&mouse, locate.x, locate.y);
+        }
+        
+        locate.refresh(&locate);
+        found = locate.locate_color(&locate, 0xff758ce9);    // bright blue
+        if(found)
+        {
+            //printf("4");
+            mouse.clickl_xy(&mouse, locate.x, locate.y);
+        }
         
         //locate.get_color_rgb_xy(&locate, p.x, p.y);
         //uint32_t col = locate.get_color_xy(&locate, p.x, p.y);
