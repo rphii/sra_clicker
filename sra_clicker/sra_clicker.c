@@ -68,7 +68,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     //if(locate.restrict_window(&locate, "Notepad++ : a free (GNU) source code editor (32 Bit)"))
 //    for(;;)
 //    {
-        if(locate.restrict_window(&locate, "Task-Manager"))
+        if(locate.restrict_window(&locate, "*Unbenannt - Editor"))
         {
 //            printf("ok1\n");
             if(locate.refresh(&locate))
@@ -149,7 +149,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     
     
     bool found = false;
-    locate.restrict_window(&locate, "Bluestacks");
+    locate.restrict_window(&locate, "Unbenannt - Editor");
     
     for(int i = 0; i < 10000; i++)
     //for(;;)

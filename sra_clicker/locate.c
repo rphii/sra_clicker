@@ -167,7 +167,6 @@ static bool sra_locate_refresh(sra_locate_t *self)
         _data->OffsY = rWnd.top;
         
         // TODO consider removing these since they are stored in bitmap header
-        if(!GetClientRect(hWnd, &rWnd)) return false;
         _data->Width = rWnd.right - rWnd.left;
         _data->Height = rWnd.bottom - rWnd.top; 
         
