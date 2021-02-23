@@ -1,0 +1,7 @@
+#include "winuser.h"
+
+#define CREATEPROCESS_MANIFEST_RESOURCE_ID 1 //Defined manifest file
+#define RT_MANIFEST                       24
+
+CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "sra_clicker.exe.manifest"
+
