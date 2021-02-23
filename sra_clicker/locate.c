@@ -163,12 +163,15 @@ static bool sra_locate_refresh(sra_locate_t *self)
         if(!hScreen) return false;
         RECT rWnd;
         if(!GetWindowRect(hWnd, &rWnd)) return false;
-        
-        // TODO consider removing these since they are stored in bitmap header
-        _data->Width = rWnd.right - rWnd.left;
-        _data->Height = rWnd.bottom - rWnd.top; 
         _data->OffsX = rWnd.left;
         _data->OffsY = rWnd.top;
+        
+        // TODO consider removing these since they are stored in bitmap header
+        if(!GetClientRect(hWnd, &rWnd)) return false;
+        _data->Width = rWnd.right - rWnd.left;
+        _data->Height = rWnd.bottom - rWnd.top; 
+        
+        printf("%d x %d off %d/%d\n", _data->Width, _data->Height, _data->OffsX, _data->OffsY);
     }
     else
     {
@@ -209,13 +212,13 @@ static bool sra_locate_refresh(sra_locate_t *self)
     
     if(!GetDIBits(hdcMem, hBitmap, 0, _data->Height, _data->Pixels, (BITMAPINFO*)&_data->BitmapInfoHeader, DIB_RGB_COLORS)) return false;
     
-    if(_data->Restrict)
+    if(_data->Restrict) // is a window specified?
     {
-        ReleaseDC(GetDesktopWindow(), hScreen);
+        ReleaseDC(FindWindowA(NULL, _data->Restrict), hScreen);
     }
     else
     {
-        ReleaseDC(FindWindowA(NULL, _data->Restrict), hScreen);
+        ReleaseDC(GetDesktopWindow(), hScreen);
     }
     DeleteDC(hdcMem);
     DeleteObject(hBitmap);

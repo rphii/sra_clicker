@@ -64,6 +64,25 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     sra_locate_t locate;
     sra_locate_setup(&locate);
     
+    
+    //if(locate.restrict_window(&locate, "Notepad++ : a free (GNU) source code editor (32 Bit)"))
+//    for(;;)
+//    {
+        if(locate.restrict_window(&locate, "Task-Manager"))
+        {
+//            printf("ok1\n");
+            if(locate.refresh(&locate))
+            {
+//                printf("ok2\n");
+                if(locate.save_bmp(&locate, "image.bmp"))
+                {
+                    printf("ok3\n");
+                }
+            }
+            
+        }
+//    }
+    
     // Keep this app running until we're told to stop
     /*MSG Message;
     for(;;)
