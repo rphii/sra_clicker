@@ -81,7 +81,7 @@ void sra_locate_setup(sra_locate_t *self)
     
     // initialize data with 0 / whatever its supposed to be
     _data->Pixels = NULL;
-    _data->Handle = NULL;
+    _data->Handle = 0;
     _data->Width = 0;
     _data->Height = 0;
     _data->OffsX = 0;
@@ -325,12 +325,17 @@ static bool sra_locate_restrict_window(sra_locate_t *self, wchar_t *Window)
     if(Window)
     {
         // find window
+        //_data->Handle
         _data->Handle = FindWindow(NULL, Window);
         if(!_data->Handle) return false;
         
         // get dimensions
         RECT rWnd;
-        if(!GetWindowRect(_data->Handle, &rWnd)) return false;
+        if(!GetWindowRect(_data->Handle, &rWnd)) 
+        {
+            _data->Handle = 0;
+            return false;
+        }
         _data->OffsX = rWnd.left;
         _data->OffsY = rWnd.top;
         
@@ -338,25 +343,35 @@ static bool sra_locate_restrict_window(sra_locate_t *self, wchar_t *Window)
         _data->Width = rWnd.right - rWnd.left;
         _data->Height = rWnd.bottom - rWnd.top; 
         
-        printf("%d x %d off %d/%d\n", _data->Width, _data->Height, _data->OffsX, _data->OffsY);
+//        printf("%d x %d off %d/%d\n", _data->Width, _data->Height, _data->OffsX, _data->OffsY);
         
+        // allocate memory for pixels
         if(_data->Pixels)
         {
             free(_data->Pixels);
         }
         _data->Pixels = malloc(sizeof *_data->Pixels * 4 * _data->Width * _data->Height);
-        if(!_data->Pixels) return false;
+        if(!_data->Pixels) 
+        {
+            _data->Handle = 0;
+            return false;
+        }
         
+        // allocate memory for next pixels
         if(_data->NextPX)
         {
             free(_data->NextPX);
         }
         _data->NextPX = malloc(sizeof *_data->Pixels * _data->Width * _data->Height);
-        if(!_data->NextPX) return false;
+        if(!_data->NextPX)
+        {
+            _data->Handle = 0;
+            return false;
+        }
     }
     else
     {
-        _data->Handle = NULL;
+        _data->Handle = 0;
         _data->OffsX = 0;
         _data->OffsY = 0;
     }
