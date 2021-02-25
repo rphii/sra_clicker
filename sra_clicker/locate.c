@@ -30,8 +30,8 @@ typedef struct
     BITMAPINFOHEADER BitmapInfoHeader;
     BITMAPFILEHEADER BitmapFileHeader;
     
-    // restricted window; NULL = everything
-    char *Restrict; 
+    // window handle for restrict; NULL = desktop
+    HWND Handle;
 }
 sra_locate_data_t;
 
@@ -43,8 +43,8 @@ static bool sra_locate_refresh(sra_locate_t *self);
 static bool sra_locate_locate_color_rgb(sra_locate_t *self, uint8_t r, uint8_t g, uint8_t b);
 static void sra_locate_get_color_rgb_xy(sra_locate_t *self, int x, int y);
 static uint32_t sra_locate_get_color_xy(sra_locate_t *self, int x, int y);
-static bool sra_locate_save_bmp(sra_locate_t *self, char *Filename);
-static bool sra_locate_restrict_window(sra_locate_t *self, char *Window);
+static bool sra_locate_save_bmp(sra_locate_t *self, wchar_t *Filename);
+static bool sra_locate_restrict_window(sra_locate_t *self, wchar_t *Window);
 static bool sra_locate_locate_color(sra_locate_t *self, uint32_t Color);
 static int sra_locate_add_ignore_rect(sra_locate_t *self, int left, int top, int right, int bottom);
 
@@ -81,7 +81,7 @@ void sra_locate_setup(sra_locate_t *self)
     
     // initialize data with 0 / whatever its supposed to be
     _data->Pixels = NULL;
-    _data->Restrict = NULL;
+    _data->Handle = NULL;
     _data->Width = 0;
     _data->Height = 0;
     _data->OffsX = 0;
@@ -131,11 +131,6 @@ void sra_locate_free(sra_locate_t *self)
         {
             free(_data->Pixels);
         }
-        // is there restriction to be free'd?
-        if(_data->Restrict)
-        {
-            free(_data->Restrict);
-        }
         
         // free data
         free(self->data);
@@ -161,23 +156,11 @@ static bool sra_locate_refresh(sra_locate_t *self)
     
     HDC hScreen = NULL;
     
-    if(_data->Restrict) // a window is specified?
+    if(_data->Handle) // a window is specified?
     {
         // take screenshot of that window
-        HWND hWnd = FindWindowA(NULL, _data->Restrict);
-        if(!hWnd) return false;
-        hScreen = GetWindowDC(hWnd);
+        hScreen = GetWindowDC(_data->Handle);
         if(!hScreen) return false;
-        RECT rWnd;
-        if(!GetWindowRect(hWnd, &rWnd)) return false;
-        _data->OffsX = rWnd.left;
-        _data->OffsY = rWnd.top;
-        
-        // TODO consider removing these since they are stored in bitmap header
-        _data->Width = rWnd.right - rWnd.left;
-        _data->Height = rWnd.bottom - rWnd.top; 
-        
-        //printf("%d x %d off %d/%d\n", _data->Width, _data->Height, _data->OffsX, _data->OffsY);
     }
     else
     {
@@ -208,25 +191,11 @@ static bool sra_locate_refresh(sra_locate_t *self)
     _data->BitmapInfoHeader.biCompression = BI_RGB;
     _data->BitmapInfoHeader.biSizeImage = 4 * _data->Width * _data->Height;//0;// 3 * _data->Width * _data->Height;
     
-    if(_data->Pixels)
-    {
-        free(_data->Pixels);
-    }
-    _data->Pixels = malloc(sizeof *_data->Pixels * 4 * _data->Width * _data->Height);
-    if(!_data->Pixels) return false;
-    
-    if(_data->NextPX)
-    {
-        free(_data->NextPX);
-    }
-    _data->NextPX = malloc(sizeof *_data->Pixels * _data->Width * _data->Height);
-    if(!_data->NextPX) return false;
-    
     if(!GetDIBits(hdcMem, hBitmap, 0, _data->Height, _data->Pixels, (BITMAPINFO*)&_data->BitmapInfoHeader, DIB_RGB_COLORS)) return false;
     
-    if(_data->Restrict) // is a window specified?
+    if(_data->Handle) // is a window specified?
     {
-        ReleaseDC(FindWindowA(NULL, _data->Restrict), hScreen);
+        ReleaseDC(_data->Handle, hScreen);
     }
     else
     {
@@ -303,14 +272,14 @@ static uint32_t sra_locate_get_color_xy(sra_locate_t *self, int x, int y)
  *  return  false   save failed
  *          true    save successful
  */
-static bool sra_locate_save_bmp(sra_locate_t *self, char *Filename)
+static bool sra_locate_save_bmp(sra_locate_t *self, wchar_t *Filename)
 {
     // error precaution
     if(!self) return false;             // is there a struct?
     if(!_data->Pixels) return false;    // is there an image?
     // save the bitmap
     // output the file
-    FILE * file = fopen(Filename, "wb");
+    FILE *file = _wfopen(Filename, L"wb");
     if(!file) return false;
     // file header
     _data->BitmapFileHeader.bfSize = 40 + 14 + _data->BitmapInfoHeader.biSizeImage;
@@ -347,24 +316,47 @@ static bool sra_locate_save_bmp(sra_locate_t *self, char *Filename)
  *  return  true    successfully set it (any unsupported ones will also return true)
  *          false   failed to set it
  */
-static bool sra_locate_restrict_window(sra_locate_t *self, char *Window)
+static bool sra_locate_restrict_window(sra_locate_t *self, wchar_t *Window)
 {
     // error precaution
     if(!self) return false;
     // set the restrict
-    if(_data->Restrict)
-    {
-        free(_data->Restrict);
-    }
+    
     if(Window)
     {
-        _data->Restrict = malloc(sizeof *_data->Restrict * (strlen(Window)) + 1);
-        if(!_data->Restrict) return false;
-        strcpy(_data->Restrict, Window);
+        // find window
+        _data->Handle = FindWindow(NULL, Window);
+        if(!_data->Handle) return false;
+        
+        // get dimensions
+        RECT rWnd;
+        if(!GetWindowRect(_data->Handle, &rWnd)) return false;
+        _data->OffsX = rWnd.left;
+        _data->OffsY = rWnd.top;
+        
+        // TODO consider removing these since they are stored in bitmap header
+        _data->Width = rWnd.right - rWnd.left;
+        _data->Height = rWnd.bottom - rWnd.top; 
+        
+        printf("%d x %d off %d/%d\n", _data->Width, _data->Height, _data->OffsX, _data->OffsY);
+        
+        if(_data->Pixels)
+        {
+            free(_data->Pixels);
+        }
+        _data->Pixels = malloc(sizeof *_data->Pixels * 4 * _data->Width * _data->Height);
+        if(!_data->Pixels) return false;
+        
+        if(_data->NextPX)
+        {
+            free(_data->NextPX);
+        }
+        _data->NextPX = malloc(sizeof *_data->Pixels * _data->Width * _data->Height);
+        if(!_data->NextPX) return false;
     }
     else
     {
-        _data->Restrict = 0;
+        _data->Handle = NULL;
         _data->OffsX = 0;
         _data->OffsY = 0;
     }

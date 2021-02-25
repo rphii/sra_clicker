@@ -64,21 +64,20 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     sra_locate_t locate;
     sra_locate_setup(&locate);
     
-    
     //if(locate.restrict_window(&locate, "Notepad++ : a free (GNU) source code editor (32 Bit)"))
 //    for(;;)
 //    {
-        //if(locate.restrict_window(&locate, "Bluestacks"))
+        if(locate.restrict_window(&locate, L"Task-Manager"))
         {
 //            printf("ok1\n");
             if(locate.refresh(&locate))
             {
 //                printf("ok2\n");
-                //if(locate.save_bmp(&locate, "image.bmp"))
-                //{
-                //    printf("ok3\n");
-                //}
-                printf(".");
+                if(locate.save_bmp(&locate, L"image.bmp"))
+                {
+                    printf("ok3\n");
+                }
+                //printf(".");
             }
             
         }
@@ -137,7 +136,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     //mouse.clickl_xy(&mouse, 1000, 1000);
     
     
-    
+    for(;;);
     
     /*for(;;)
     {
@@ -148,9 +147,9 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         mouse.releasel(&mouse);
     }*/
     
-    
+    /*
     bool found = false;
-    locate.restrict_window(&locate, "Bluestacks");
+    locate.restrict_window(&locate, L"OneNote für Windows 10");
     
     for(int i = 0; i < 10000; i++)
     //for(;;)
@@ -202,7 +201,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         
         //printf("%d/%d:%x\n", p.x, p.y, col);
     }
-    
+    */
     
     
     /*

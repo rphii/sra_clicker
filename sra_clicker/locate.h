@@ -26,8 +26,8 @@ typedef struct sra_locate_s
     bool (*locate_color_rgb)(sra_locate_t *self, uint8_t r, uint8_t g, uint8_t b);  // TODO respect valid_window, only take screenshot of valid_window
     void (*get_color_rgb_xy)(sra_locate_t *self, int x, int y);
     uint32_t (*get_color_xy)(sra_locate_t *self, int x, int y);
-    bool (*save_bmp)(sra_locate_t *self, char *Filename);
-    bool (*restrict_window)(sra_locate_t *self, char *Window);
+    bool (*save_bmp)(sra_locate_t *self, wchar_t *Filename);
+    bool (*restrict_window)(sra_locate_t *self, wchar_t *Window);
     bool (*locate_color)(sra_locate_t *self, uint32_t Color);
     bool (*add_ignore_rect)(sra_locate_t *self, int left, int top, int right, int bottom);
     
