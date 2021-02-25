@@ -66,8 +66,8 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     
     
     //if(locate.restrict_window(&locate, "Notepad++ : a free (GNU) source code editor (32 Bit)"))
-    for(;;)
-    {
+//    for(;;)
+//    {
         //if(locate.restrict_window(&locate, "Bluestacks"))
         {
 //            printf("ok1\n");
@@ -82,7 +82,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
             }
             
         }
-    }
+//    }
     
     // Keep this app running until we're told to stop
     /*MSG Message;
@@ -150,7 +150,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     
     
     bool found = false;
-    locate.restrict_window(&locate, "Unbenannt - Editor");
+    locate.restrict_window(&locate, "Bluestacks");
     
     for(int i = 0; i < 10000; i++)
     //for(;;)

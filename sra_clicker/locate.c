@@ -113,7 +113,7 @@ void sra_locate_setup(sra_locate_t *self)
     self->save_bmp = sra_locate_save_bmp;
     self->restrict_window = sra_locate_restrict_window;
     self->locate_color = sra_locate_locate_color;
-    self->add_ignore_rect = sra_locate_add_ignore_rect;
+    //self->add_ignore_rect = sra_locate_add_ignore_rect;
 }
 
 /*  func    sra_locate_free
@@ -177,7 +177,7 @@ static bool sra_locate_refresh(sra_locate_t *self)
         _data->Width = rWnd.right - rWnd.left;
         _data->Height = rWnd.bottom - rWnd.top; 
         
-        printf("%d x %d off %d/%d\n", _data->Width, _data->Height, _data->OffsX, _data->OffsY);
+        //printf("%d x %d off %d/%d\n", _data->Width, _data->Height, _data->OffsX, _data->OffsY);
     }
     else
     {
