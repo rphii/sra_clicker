@@ -29,6 +29,7 @@ typedef struct sra_locate_s
     bool (*save_bmp)(sra_locate_t *self, char *Filename);
     bool (*restrict_window)(sra_locate_t *self, char *Window);
     bool (*locate_color)(sra_locate_t *self, uint32_t Color);
+    bool (*add_ignore_rect)(sra_locate_t *self, int left, int top, int right, int bottom);
     
     //void (*restrict_window)(sra_locate_t *self, char *Window);
     //void (*focus_window)(sra_locate_t *self, char *Window);

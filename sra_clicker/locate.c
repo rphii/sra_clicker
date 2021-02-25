@@ -16,6 +16,10 @@ typedef struct
     // pixel data of the image
     BYTE *Pixels;
     
+    // when going through the bitmap, this array tells us where the next pixel we
+    // have to look at lays. (added when the ignore_rect functions got added)
+    int *NextPX;
+    
     // image stuff
     int Width;  // width, duh
     int Height; // height
@@ -42,6 +46,7 @@ static uint32_t sra_locate_get_color_xy(sra_locate_t *self, int x, int y);
 static bool sra_locate_save_bmp(sra_locate_t *self, char *Filename);
 static bool sra_locate_restrict_window(sra_locate_t *self, char *Window);
 static bool sra_locate_locate_color(sra_locate_t *self, uint32_t Color);
+static int sra_locate_add_ignore_rect(sra_locate_t *self, int left, int top, int right, int bottom);
 
 /**********************************/
 /*** HELPER FUNCTION PROTOTYPES ***/
@@ -76,6 +81,7 @@ void sra_locate_setup(sra_locate_t *self)
     
     // initialize data with 0 / whatever its supposed to be
     _data->Pixels = NULL;
+    _data->Restrict = NULL;
     _data->Width = 0;
     _data->Height = 0;
     _data->OffsX = 0;
@@ -107,6 +113,7 @@ void sra_locate_setup(sra_locate_t *self)
     self->save_bmp = sra_locate_save_bmp;
     self->restrict_window = sra_locate_restrict_window;
     self->locate_color = sra_locate_locate_color;
+    self->add_ignore_rect = sra_locate_add_ignore_rect;
 }
 
 /*  func    sra_locate_free
@@ -201,13 +208,19 @@ static bool sra_locate_refresh(sra_locate_t *self)
     _data->BitmapInfoHeader.biCompression = BI_RGB;
     _data->BitmapInfoHeader.biSizeImage = 4 * _data->Width * _data->Height;//0;// 3 * _data->Width * _data->Height;
     
-    BYTE *Pixels;
     if(_data->Pixels)
     {
         free(_data->Pixels);
     }
     _data->Pixels = malloc(sizeof *_data->Pixels * 4 * _data->Width * _data->Height);
     if(!_data->Pixels) return false;
+    
+    if(_data->NextPX)
+    {
+        free(_data->NextPX);
+    }
+    _data->NextPX = malloc(sizeof *_data->Pixels * _data->Width * _data->Height);
+    if(!_data->NextPX) return false;
     
     if(!GetDIBits(hdcMem, hBitmap, 0, _data->Height, _data->Pixels, (BITMAPINFO*)&_data->BitmapInfoHeader, DIB_RGB_COLORS)) return false;
     
@@ -383,6 +396,18 @@ static bool sra_locate_locate_color(sra_locate_t *self, uint32_t Color)
     }
     
     return false;
+}
+
+/*  func    sra_locate_ignore_window
+ *  desc    add a rectangle/region where some functions (locate) should not search.
+ *          left,top,right,bottoom in pixels, relative to the window. (0,0 is top left,
+ *          width/height is bottom right)
+ *          
+ *  return  returns the "id" of the added rectangle
+ */
+static int sra_locate_add_ignore_rect(sra_locate_t *self, int left, int top, int right, int bottom)
+{
+    return 0;
 }
 
 /***********************************/
