@@ -67,13 +67,13 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     //if(locate.restrict_window(&locate, "Notepad++ : a free (GNU) source code editor (32 Bit)"))
 //    for(;;)
 //    {
-        if(locate.restrict_window(&locate, L"Task-Manager"))
+        if(!locate.restrict_window(&locate, L"Task-Manager"))
         {
 //            printf("ok1\n");
-            if(locate.refresh(&locate))
+            if(!locate.refresh(&locate))
             {
 //                printf("ok2\n");
-                if(locate.save_bmp(&locate, L"image.bmp"))
+                if(!locate.save_bmp(&locate, L"image.bmp"))
                 {
                     printf("ok3\n");
                 }
@@ -105,7 +105,6 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     for(;;)
     {
     }*/
-    
     
     /*locate.refresh(&locate);
     // TODO add this thing to locate.c/h, but add it good

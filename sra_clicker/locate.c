@@ -23,7 +23,7 @@ typedef struct
     // image stuff
     int Width;  // width, duh
     int Height; // height
-    int OffsX;  // offset x on screen
+    int OffsX;  // offset x on screen TODO do I even need those...?
     int OffsY;  // offset y on screen
     
     // bitmap info & file header
@@ -39,14 +39,14 @@ sra_locate_data_t;
 /*** PRIVATE FUNCTION PROTOTYPES ***/
 /***********************************/
 
-static bool sra_locate_refresh(sra_locate_t *self);
-static bool sra_locate_locate_color_rgb(sra_locate_t *self, uint8_t r, uint8_t g, uint8_t b);
-static void sra_locate_get_color_rgb_xy(sra_locate_t *self, int x, int y);
-static uint32_t sra_locate_get_color_xy(sra_locate_t *self, int x, int y);
-static bool sra_locate_save_bmp(sra_locate_t *self, wchar_t *Filename);
-static bool sra_locate_restrict_window(sra_locate_t *self, wchar_t *Window);
-static bool sra_locate_locate_color(sra_locate_t *self, uint32_t Color);
-static int sra_locate_add_ignore_rect(sra_locate_t *self, int left, int top, int right, int bottom);
+static sra_locate_error_t sra_locate_refresh(sra_locate_t *self);
+static sra_locate_error_t sra_locate_locate_color_rgb(sra_locate_t *self, uint8_t r, uint8_t g, uint8_t b);
+static sra_locate_error_t sra_locate_get_color_rgb_xy(sra_locate_t *self, int x, int y);
+static sra_locate_error_t sra_locate_get_color_xy(sra_locate_t *self, int x, int y);
+static sra_locate_error_t sra_locate_save_bmp(sra_locate_t *self, wchar_t *Filename);
+static sra_locate_error_t sra_locate_restrict_window(sra_locate_t *self, wchar_t *Window);
+static sra_locate_error_t sra_locate_locate_color(sra_locate_t *self, uint32_t Color);
+static sra_locate_error_t sra_locate_add_ignore_rect(sra_locate_t *self, int left, int top, int right, int bottom);
 
 /**********************************/
 /*** HELPER FUNCTION PROTOTYPES ***/
@@ -64,13 +64,13 @@ static inline uint8_t PosA(sra_locate_t *self, int x, int y);
 /*  func    sra_locate_setup
  *  desc    set up locate
  */
-void sra_locate_setup(sra_locate_t *self)
+sra_locate_error_t sra_locate_setup(sra_locate_t *self)
 {
-    if(!self) return;   // error precaution
+    if(!self) return SRA_LOCATE_ERR_MISSING_SELF;       // error precaution
     
     // allocate data memory
     self->data = malloc(sizeof(sra_locate_data_t));
-    if(!self->data) return; // error precaution TODO add logging
+    if(!self->data) return SRA_LOCATE_ERR_MALLOC_DATA;  // error precaution
     
     // initialize publics with 0
     self->x = 0;
@@ -78,6 +78,7 @@ void sra_locate_setup(sra_locate_t *self)
     self->r = 0;
     self->g = 0;
     self->b = 0;
+    self->argb = 0;
     
     // initialize data with 0 / whatever its supposed to be
     _data->Pixels = NULL;
@@ -114,14 +115,15 @@ void sra_locate_setup(sra_locate_t *self)
     self->restrict_window = sra_locate_restrict_window;
     self->locate_color = sra_locate_locate_color;
     //self->add_ignore_rect = sra_locate_add_ignore_rect;
+    return SRA_LOCATE_ERR_NONE;
 }
 
 /*  func    sra_locate_free
  *  desc    frees the memory of a locate
  */
-void sra_locate_free(sra_locate_t *self)
+sra_locate_error_t sra_locate_free(sra_locate_t *self)
 {
-    if(!self) return;   // error precaution
+    if(!self) return SRA_LOCATE_ERR_MISSING_SELF;   // error precaution
     
     // was there data allocated in the first place?
     if(self->data)
@@ -135,6 +137,8 @@ void sra_locate_free(sra_locate_t *self)
         // free data
         free(self->data);
     }
+    
+    return SRA_LOCATE_ERR_NONE;
 }
 
 /************************************/
@@ -143,12 +147,11 @@ void sra_locate_free(sra_locate_t *self)
 
 /*  func    sra_locate_refresh
  *  desc    refresh image buffer to locate in
- *  return  false   failed to refresh
- *          true    successful refresh
+ *  return  error code (0 = success)
  */
-static bool sra_locate_refresh(sra_locate_t *self)
+static sra_locate_error_t sra_locate_refresh(sra_locate_t *self)
 {
-    if(!self) return false;   // error precaution
+    if(!self) return SRA_LOCATE_ERR_MISSING_SELF;   // error precaution
     // https://stackoverflow.com/questions/66251475/screenshot-of-specific-window-c-c#66251475
     // https://stackoverflow.com/questions/3291167/how-can-i-take-a-screenshot-in-a-windows-application
     // https://stackoverflow.com/questions/16112482/c-getting-rgb-from-hbitmap
@@ -160,28 +163,29 @@ static bool sra_locate_refresh(sra_locate_t *self)
     {
         // take screenshot of that window
         hScreen = GetWindowDC(_data->Handle);
-        if(!hScreen) return false;
+        if(!hScreen) return SRA_LOCATE_ERR_GETWINDOWDC;
     }
     else
     {
         // take screenshot of desktop
         hScreen = CreateDC(L"DISPLAY", NULL, NULL, NULL);
+        if(!hScreen) return SRA_LOCATE_ERR_CREATEDC;
         
         _data->Width = GetDeviceCaps(hScreen, HORZRES); 
         _data->Height = GetDeviceCaps(hScreen, VERTRES);
     }
     
     HDC hdcMem = CreateCompatibleDC(hScreen);
-    if(!hdcMem) return false;
+    if(!hdcMem) return SRA_LOCATE_ERR_CREATECOMPATIBLEDC;
     
     HBITMAP hBitmap = CreateCompatibleBitmap(hScreen, _data->Width, _data->Height);
-    if(!hBitmap) return false;
+    if(!hBitmap) return SRA_LOCATE_ERR_CREATECOMPATIBLEBITMAP;
     
     HGDIOBJ hOld = SelectObject(hdcMem, hBitmap);
-    if(!hOld) return false;
+    if(!hOld) return SRA_LOCATE_ERR_SELECTOBJECT;
     
     BitBlt(hdcMem, 0, 0, _data->Width, _data->Height, hScreen, 0, 0, SRCCOPY);
-    if(!SelectObject(hdcMem, hOld)) return false;
+    if(!SelectObject(hdcMem, hOld)) return SRA_LOCATE_ERR_BITBLT;
     
     _data->BitmapInfoHeader.biSize = sizeof(BITMAPINFOHEADER);
     _data->BitmapInfoHeader.biPlanes = 1;
@@ -191,7 +195,10 @@ static bool sra_locate_refresh(sra_locate_t *self)
     _data->BitmapInfoHeader.biCompression = BI_RGB;
     _data->BitmapInfoHeader.biSizeImage = 4 * _data->Width * _data->Height;//0;// 3 * _data->Width * _data->Height;
     
-    if(!GetDIBits(hdcMem, hBitmap, 0, _data->Height, _data->Pixels, (BITMAPINFO*)&_data->BitmapInfoHeader, DIB_RGB_COLORS)) return false;
+    if(!GetDIBits(hdcMem, hBitmap, 0, _data->Height, _data->Pixels, (BITMAPINFO*)&_data->BitmapInfoHeader, DIB_RGB_COLORS))
+    {
+        return SRA_LOCATE_ERR_GETDIBITS;
+    }
     
     if(_data->Handle) // is a window specified?
     {
@@ -204,19 +211,18 @@ static bool sra_locate_refresh(sra_locate_t *self)
     DeleteDC(hdcMem);
     DeleteObject(hBitmap);
     
-    return true;
+    return SRA_LOCATE_ERR_NONE;
 }
 
 /*  func    sra_locate_locate_color
  *  desc    locate color from within the image buffer. 
- *  return  true if color was found; coordinates stored in self->x and self->y
- *          false if color was not found
+ *  return  error code (0 = success)
  */
-static bool sra_locate_locate_color_rgb(sra_locate_t *self, uint8_t r, uint8_t g, uint8_t b)
+static sra_locate_error_t sra_locate_locate_color_rgb(sra_locate_t *self, uint8_t r, uint8_t g, uint8_t b)
 {
     // error precaution
-    if(!self) return false;             // is there a struct?
-    if(!_data->Pixels) return false;    // is there an image?
+    if(!self) return SRA_LOCATE_ERR_MISSING_SELF;   // is there a struct?
+    if(!_data->Pixels) return SRA_LOCATE_ERR_MISSING_PIXELS;    // is there an image?
     
     // locate pixel
     for(int y = 0; y < _data->Height; y++)
@@ -231,21 +237,22 @@ static bool sra_locate_locate_color_rgb(sra_locate_t *self, uint8_t r, uint8_t g
             // color was found
             self->x = x + _data->OffsX;
             self->y = y + _data->OffsY;
-            return true;
+            return SRA_LOCATE_ERR_NONE;
         }
     }
-    return false;
+    return SRA_LOCATE_ERR_EOFUNCTION;
 }
 
 /*  func    sra_locate_get_color_rgb_xy
  *  desc    get color at x and y coordinate (pixels); normally run after refresh
- *  return  colors in self->r, self->g, self->b
+ *  return  error code (0 = success)
+ *          colors in self->r, self->g, self->b
  */
-static void sra_locate_get_color_rgb_xy(sra_locate_t *self, int x, int y)
+static sra_locate_error_t sra_locate_get_color_rgb_xy(sra_locate_t *self, int x, int y)
 {
     // error precaution
-    if(!self) return;               // is there a struct?
-    if(!_data->Pixels) return;      // is there an image?
+    if(!self) return SRA_LOCATE_ERR_MISSING_SELF;   // is there a struct?
+    if(!_data->Pixels) return SRA_LOCATE_ERR_MISSING_PIXELS; // is there an image?
     // adjust x and y
     x -= _data->OffsX;
     y -= _data->OffsY;
@@ -253,34 +260,35 @@ static void sra_locate_get_color_rgb_xy(sra_locate_t *self, int x, int y)
     self->r = PosR(self, x, y);
     self->g = PosG(self, x, y);
     self->b = PosB(self, x, y);
+    return SRA_LOCATE_ERR_NONE;
 }
 
 /*  func    sra_locate_get_color_xy
  *  desc    return a 32 bit color from the coordinate x and y (pixels); normally run after refresh
  */
-static uint32_t sra_locate_get_color_xy(sra_locate_t *self, int x, int y)
+static sra_locate_error_t sra_locate_get_color_xy(sra_locate_t *self, int x, int y)
 {
-    if(!self) return 0; // error precaution
+    if(!self) return SRA_LOCATE_ERR_MISSING_SELF; // error precaution
     // adjust x and y
     x -= _data->OffsX;
     y -= _data->OffsY;
-    return ((uint32_t*)_data->Pixels)[(y * _data->Width) + x];
+    self->argb = ((uint32_t*)_data->Pixels)[(y * _data->Width) + x];
+    return SRA_LOCATE_ERR_NONE;
 }
 
 /*  func    sra_locate_save_bmp
  *  desc    saves the pixels from refresh into a file
- *  return  false   save failed
- *          true    save successful
+ *  return  error code (0 = success)
  */
-static bool sra_locate_save_bmp(sra_locate_t *self, wchar_t *Filename)
+static sra_locate_error_t sra_locate_save_bmp(sra_locate_t *self, wchar_t *Filename)
 {
     // error precaution
-    if(!self) return false;             // is there a struct?
-    if(!_data->Pixels) return false;    // is there an image?
+    if(!self) return SRA_LOCATE_ERR_MISSING_SELF;               // is there a struct?
+    if(!_data->Pixels) return SRA_LOCATE_ERR_MISSING_PIXELS;    // is there image data?
     // save the bitmap
     // output the file
     FILE *file = _wfopen(Filename, L"wb");
-    if(!file) return false;
+    if(!file) return SRA_LOCATE_ERR_OPEN_FILE;
     // file header
     _data->BitmapFileHeader.bfSize = 40 + 14 + _data->BitmapInfoHeader.biSizeImage;
     fwrite(&_data->BitmapFileHeader.bfType, 2, 1, file);
@@ -304,7 +312,7 @@ static bool sra_locate_save_bmp(sra_locate_t *self, wchar_t *Filename)
     fwrite(_data->Pixels, _data->BitmapInfoHeader.biSizeImage, 1, file);
     fclose(file);
     
-    return true;
+    return SRA_LOCATE_ERR_NONE;
 }
 
 /*  func    sra_locate_restrict_window
@@ -313,28 +321,27 @@ static bool sra_locate_save_bmp(sra_locate_t *self, wchar_t *Filename)
  *          unsupported:
  *              Calculator
  *              ...
- *  return  true    successfully set it (any unsupported ones will also return true)
- *          false   failed to set it
+ *  return  error code (0 = success)
  */
-static bool sra_locate_restrict_window(sra_locate_t *self, wchar_t *Window)
+static sra_locate_error_t sra_locate_restrict_window(sra_locate_t *self, wchar_t *Window)
 {
     // error precaution
-    if(!self) return false;
+    if(!self) return SRA_LOCATE_ERR_MISSING_SELF;
     // set the restrict
     
-    if(Window)
+    if(Window)  // a window is specified?
     {
         // find window
         //_data->Handle
         _data->Handle = FindWindow(NULL, Window);
-        if(!_data->Handle) return false;
+        if(!_data->Handle) return SRA_LOCATE_ERR_FINDWINDOW;
         
         // get dimensions
         RECT rWnd;
         if(!GetWindowRect(_data->Handle, &rWnd)) 
         {
-            _data->Handle = 0;
-            return false;
+            _data->Handle = 0;  // rest handle
+            return SRA_LOCATE_ERR_GETWINDOWRECT;
         }
         _data->OffsX = rWnd.left;
         _data->OffsY = rWnd.top;
@@ -351,10 +358,10 @@ static bool sra_locate_restrict_window(sra_locate_t *self, wchar_t *Window)
             free(_data->Pixels);
         }
         _data->Pixels = malloc(sizeof *_data->Pixels * 4 * _data->Width * _data->Height);
-        if(!_data->Pixels) 
+        if(!_data->Pixels)
         {
-            _data->Handle = 0;
-            return false;
+            _data->Handle = 0;  // reset handle
+            return SRA_LOCATE_ERR_MALLOC_PIXELS;
         }
         
         // allocate memory for next pixels
@@ -365,27 +372,28 @@ static bool sra_locate_restrict_window(sra_locate_t *self, wchar_t *Window)
         _data->NextPX = malloc(sizeof *_data->Pixels * _data->Width * _data->Height);
         if(!_data->NextPX)
         {
-            _data->Handle = 0;
-            return false;
+            _data->Handle = 0;  // reset handle
+            return SRA_LOCATE_ERR_MALLOC_NEXTPX;
         }
     }
-    else
+    else    // target whole desktop
     {
         _data->Handle = 0;
         _data->OffsX = 0;
         _data->OffsY = 0;
     }
-    return true;
+    return SRA_LOCATE_ERR_NONE;
 }
 
 /*  func    sra_locate_locate_color
  *  desc    locate a color off of a 32 bit color
+ *  return  error code (0 = success)
  */
-static bool sra_locate_locate_color(sra_locate_t *self, uint32_t Color)
+static sra_locate_error_t sra_locate_locate_color(sra_locate_t *self, uint32_t Color)
 {
     // error precaution
-    if(!self) return false;             // is there a struct?
-    if(!_data->Pixels) return false;    // is there an image?
+    if(!self) return SRA_LOCATE_ERR_MISSING_SELF;   // is there a struct?
+    if(!_data->Pixels) return SRA_LOCATE_ERR_MISSING_PIXELS;    // is there an image?
     
     // locate pixel
     for(int y = 0; y < _data->Height; y++)
@@ -397,22 +405,21 @@ static bool sra_locate_locate_color(sra_locate_t *self, uint32_t Color)
                 // color was found
                 self->x = x + _data->OffsX;
                 self->y = y + _data->OffsY;
-                return true;
+                return SRA_LOCATE_ERR_NONE;
             }
         }
     }
     
-    return false;
+    return SRA_LOCATE_ERR_EOFUNCTION;
 }
 
 /*  func    sra_locate_ignore_window
  *  desc    add a rectangle/region where some functions (locate) should not search.
  *          left,top,right,bottoom in pixels, relative to the window. (0,0 is top left,
  *          width/height is bottom right)
- *          
- *  return  returns the "id" of the added rectangle
+ *  return  error code (0 = success)
  */
-static int sra_locate_add_ignore_rect(sra_locate_t *self, int left, int top, int right, int bottom)
+static sra_locate_error_t sra_locate_add_ignore_rect(sra_locate_t *self, int left, int top, int right, int bottom)
 {
     return 0;
 }
