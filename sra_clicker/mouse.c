@@ -59,6 +59,7 @@ sra_mouse_t sra_mouse_new(void)
 {
     return (sra_mouse_t)
     {
+        .data = NULL,
         // assign the functions
         .initialize = sra_mouse_initialize,
         .clickl = sra_mouse_clickl,
