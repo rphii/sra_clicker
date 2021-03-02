@@ -57,7 +57,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     //HHOOK hhkLowLevelKybd = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, 0, 0);
     
     // create mouse and initialize it
-    sra_mouse_t mouse;
+    sra_mouse_t mouse = sra_mouse_new();
     sra_mouse_setup(&mouse);
     
     // create locate and initialize it
@@ -135,8 +135,6 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     //mouse.clickl_xy(&mouse, 1000, 1000);
     
     
-    for(;;);
-    
     /*for(;;)
     {
         
@@ -146,13 +144,14 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         mouse.releasel(&mouse);
     }*/
     
-    /*
-    bool found = false;
-    locate.restrict_window(&locate, L"OneNote für Windows 10");
     
-    for(int i = 0; i < 10000; i++)
+    bool found = false;
+    locate.restrict_window(&locate, L"BlueStacks");
+    locate.refresh(&locate);
+    for(int i = 0; i < 1000; i++)
     //for(;;)
     {
+        
         //for(int i = 0; i < 999999; i++) {};
         
         locate.refresh(&locate);
@@ -160,7 +159,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         //found = locate.locate_color_rgb(&locate, 191, 226, 255);    // bright blue
         //found = locate.locate_color_rgb(&locate, 108, 131, 224);    // desaturated blue
         found = locate.locate_color(&locate, 0xff6c83e0);    // desaturated blue
-        if(found)
+        if(!found)
         {
             //printf("1");
             //mouse.move_xy(&mouse, locate.x, locate.y);
@@ -170,7 +169,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         locate.refresh(&locate);
         //found = locate.locate_color_rgb(&locate, 130, 169, 252);    // darker blue
         found = locate.locate_color(&locate, 0xff82a9fc);    // darker blue
-        if(found)
+        if(!found)
         {
             //printf("2");
             //mouse.move_xy(&mouse, locate.x, locate.y);
@@ -180,7 +179,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         
         locate.refresh(&locate);
         found = locate.locate_color(&locate, 0xffb8dbff);    // bright blue
-        if(found)
+        if(!found)
         {
             //printf("3");
             mouse.clickl_xy(&mouse, locate.x, locate.y);
@@ -188,7 +187,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         
         locate.refresh(&locate);
         found = locate.locate_color(&locate, 0xff758ce9);    // bright blue
-        if(found)
+        if(!found)
         {
             //printf("4");
             mouse.clickl_xy(&mouse, locate.x, locate.y);
@@ -200,7 +199,6 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         
         //printf("%d/%d:%x\n", p.x, p.y, col);
     }
-    */
     
     
     /*
