@@ -61,7 +61,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     sra_mouse_setup(&mouse);
     
     // create locate and initialize it
-    sra_locate_t locate;
+    sra_locate_t locate = sra_locate_new();
     sra_locate_setup(&locate);
     
     //if(locate.restrict_window(&locate, "Notepad++ : a free (GNU) source code editor (32 Bit)"))
