@@ -61,6 +61,33 @@ static inline uint8_t PosA(sra_locate_t *self, int x, int y);
 /*** PUBLIC FUNCTION DEFINITIONS ***/
 /***********************************/
 
+/*  func    sra_locate_new
+ *  desc    locate struct initializer
+ */
+sra_locate_t sra_locate_new(void)
+{
+    return (sra_locate_t)
+    {
+        .data = NULL,
+        .x = 0,
+        .y = 0,
+        .a = 0,
+        .r = 0,
+        .g = 0,
+        .b = 0,
+        .argb = 0,
+        // assign functions
+        .refresh = sra_locate_refresh,
+        .locate_color_rgb = sra_locate_locate_color_rgb,
+        .get_color_rgb_xy = sra_locate_get_color_rgb_xy,
+        .get_color_xy = sra_locate_get_color_xy,
+        .save_bmp = sra_locate_save_bmp,
+        .restrict_window = sra_locate_restrict_window,
+        .locate_color = sra_locate_locate_color,
+        //.add_ignore_rect = sra_locate_add_ignore_rect,
+    };
+}
+
 /*  func    sra_locate_setup
  *  desc    set up locate
  */
@@ -106,15 +133,6 @@ sra_locate_error_t sra_locate_setup(sra_locate_t *self)
     _data->BitmapFileHeader.bfReserved2 = 0;
     _data->BitmapFileHeader.bfOffBits = 40 + 14;    // TODO magic numbers
     
-    // assign functions
-    self->refresh = sra_locate_refresh;
-    self->locate_color_rgb = sra_locate_locate_color_rgb;
-    self->get_color_rgb_xy = sra_locate_get_color_rgb_xy;
-    self->get_color_xy = sra_locate_get_color_xy;
-    self->save_bmp = sra_locate_save_bmp;
-    self->restrict_window = sra_locate_restrict_window;
-    self->locate_color = sra_locate_locate_color;
-    //self->add_ignore_rect = sra_locate_add_ignore_rect;
     return SRA_LOCATE_ERR_NONE;
 }
 
