@@ -17,6 +17,9 @@ typedef enum
     X(MALLOC_ROUTINE),          // failed to malloc routine
     X(GETDESKTOPWINDOW),        // failed to GetDesktopWindow
     X(GETWINDOWRECT),           // failed to GetWindowRect
+    X(GETFOREGROUNDWINDOW),     // failed to GetForegroundWindow
+    X(FINDWINDOW),              // failed to FindWindow
+    X(GETCURSORPOS),            // failed to GetCursorPos
     #undef X
 }
 sra_mouse_error_t;
@@ -57,6 +60,8 @@ typedef struct sra_mouse_s
     sra_mouse_error_t (*const releasel)(sra_mouse_t *self);
     sra_mouse_error_t (*const update_dimensions)(sra_mouse_t* self);
     sra_mouse_error_t (*const move_xy)(sra_mouse_t *self, int x, int y);
+    sra_mouse_error_t (*const restrict_window)(sra_mouse_t *self, wchar_t *window);
+    sra_mouse_error_t (*const get_xy)(sra_mouse_t *self, int *x, int *y);
     
     // TODO add these
     //(*scroll)

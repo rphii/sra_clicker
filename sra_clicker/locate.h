@@ -70,6 +70,10 @@ typedef struct sra_locate_s
     
     // TODO add these
     //(*set_valid_window, self, force to bring it to the foreground)
+    //improvement to locate: create a predefined array with colors to search for
+    // with the hit/miss search thing, preferrably with threads?!
+    // make it so that there only has to be one refresh and multiple locate can be triggered
+    // each locate should have its own array
     
     // undo readability
     #undef sra_locate_t

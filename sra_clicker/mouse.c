@@ -25,10 +25,16 @@ typedef struct
     {
         int Width;
         int Height;
+        RECT Window;
     }
     Screen;
     
     sra_mouse_routine_t Routines[SRA_MOUSE_ROUTINE_COUNT];    // mouse Routines like click, move, press, ...
+    
+    // window handle for restrict; NULL = all/desktop
+    HWND Handle;
+    bool found;
+    wchar_t *window;
 }
 sra_mouse_data_t;
 
@@ -44,6 +50,8 @@ static sra_mouse_error_t sra_mouse_pressl(sra_mouse_t *self);
 static sra_mouse_error_t sra_mouse_releasel(sra_mouse_t *self);
 static sra_mouse_error_t sra_mouse_update_dimensions(sra_mouse_t *self);
 static sra_mouse_error_t sra_mouse_move_xy(sra_mouse_t *self, int x, int y);
+static sra_mouse_error_t sra_mouse_restrict_window(sra_mouse_t *self, wchar_t *window);
+static sra_mouse_error_t sra_mouse_get_xy(sra_mouse_t *self, int *x, int *y);
 
 /**********************************/
 /*** HELPER FUNCTION PROTOTYPES ***/
@@ -69,6 +77,8 @@ sra_mouse_t sra_mouse_new(void)
         .releasel = sra_mouse_releasel,
         .update_dimensions = sra_mouse_update_dimensions,
         .move_xy = sra_mouse_move_xy,
+        .restrict_window = sra_mouse_restrict_window,
+        .get_xy = sra_mouse_get_xy,
     };
 }
  
@@ -113,6 +123,15 @@ sra_mouse_error_t sra_mouse_setup(sra_mouse_t *self)
     _data->Routines[SRA_MOUSE_ROUTINE_MOVE_XY].input[0].mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE | 0x4000; // 0x4000 is MOUSEEVENTF_VIRTUALDESK
     
     // finish initialization
+    _data->Handle = 0;
+    _data->Screen.Height = 0;
+    _data->Screen.Width = 0;
+    _data->Screen.Window.bottom = 0;
+    _data->Screen.Window.top = 0;
+    _data->Screen.Window.left = 0;
+    _data->Screen.Window.right = 0;
+    _data->found = true;
+    _data->window = 0;
     self->update_dimensions(self);
     
     return SRA_MOUSE_ERR_NONE;
@@ -161,6 +180,23 @@ static sra_mouse_error_t sra_mouse_clickl(sra_mouse_t *self)
 {
     // error prevention
     if(!self->data) return SRA_MOUSE_ERR_MISSING_SELF;
+    
+    // check if we're in the same handle
+    if(!_data->found) // a window is specified?
+    {
+        self->restrict_window(self, _data->window);
+        if(!_data->found)
+        {
+            return SRA_MOUSE_ERR_NONE;
+        }
+        HWND Handle = GetForegroundWindow();
+        if(!Handle) return SRA_MOUSE_ERR_GETFOREGROUNDWINDOW;
+        if(Handle != _data->Handle)
+        {
+            return SRA_MOUSE_ERR_NONE;
+        }
+    }
+    
     // execute routine
     SendInput(_data->Routines[SRA_MOUSE_ROUTINE_CLICKL].count, _data->Routines[SRA_MOUSE_ROUTINE_CLICKL].input, sizeof(INPUT));
     
@@ -175,6 +211,23 @@ static sra_mouse_error_t sra_mouse_clickl_xy(sra_mouse_t *self, int x, int y)
 {
     // error prevention
     if(!self->data) return SRA_MOUSE_ERR_MISSING_SELF;
+    
+    // check if we're in the same handle
+    if(!_data->found) // a window is specified?
+    {
+        self->restrict_window(self, _data->window);
+        if(!_data->found)
+        {
+            return SRA_MOUSE_ERR_NONE;
+        }
+        HWND Handle = GetForegroundWindow();
+        if(!Handle) return SRA_MOUSE_ERR_GETFOREGROUNDWINDOW;
+        if(Handle != _data->Handle)
+        {
+            return SRA_MOUSE_ERR_NONE;
+        }
+    }
+    
     // make additional routine instructions
     _data->Routines[SRA_MOUSE_ROUTINE_CLICKL_XY].input[0].mi.dx = (65535 * x) / _data->Screen.Width;    // TODO magic numbers
     _data->Routines[SRA_MOUSE_ROUTINE_CLICKL_XY].input[0].mi.dy = (65535 * y) / _data->Screen.Height;   // TODO magic numbers
@@ -192,11 +245,33 @@ static sra_mouse_error_t sra_mouse_move(sra_mouse_t *self, int x, int y)
 {
     // error prevention
     if(!self->data) return SRA_MOUSE_ERR_MISSING_SELF;
+    
+    // check if we're in the same handle
+    if(!_data->found ||_data->Handle) // a window is specified?
+    {
+        self->restrict_window(self, _data->window);
+        if(!_data->found)
+        {
+            return SRA_MOUSE_ERR_NONE;
+        }
+        HWND Handle = GetForegroundWindow();
+        if(!Handle) return SRA_MOUSE_ERR_GETFOREGROUNDWINDOW;
+        if(Handle != _data->Handle)
+        {
+            return SRA_MOUSE_ERR_NONE;
+        }
+    }
+    
     // make additional routine instructions
-    _data->Routines[SRA_MOUSE_ROUTINE_MOVE_XY].input[0].mi.dx = x;  // TODO magic numbers
-    _data->Routines[SRA_MOUSE_ROUTINE_MOVE_XY].input[0].mi.dy = y;
+    _data->Routines[SRA_MOUSE_ROUTINE_MOVE].input[0].mi.dx = x;  // TODO magic numbers
+    _data->Routines[SRA_MOUSE_ROUTINE_MOVE].input[0].mi.dy = y;
     // execute routine
-    SendInput(_data->Routines[SRA_MOUSE_ROUTINE_MOVE_XY].count, _data->Routines[SRA_MOUSE_ROUTINE_MOVE_XY].input, sizeof(INPUT));
+    SendInput(_data->Routines[SRA_MOUSE_ROUTINE_MOVE].count, _data->Routines[SRA_MOUSE_ROUTINE_MOVE].input, sizeof(INPUT));
+    
+    if(_data->found)
+    {
+        ClipCursor(&_data->Screen.Window);
+    }
     
     return SRA_MOUSE_ERR_NONE;
 }
@@ -208,6 +283,23 @@ static sra_mouse_error_t sra_mouse_pressl(sra_mouse_t *self)
 {
     // error prevention
     if(!self->data) return SRA_MOUSE_ERR_MISSING_SELF;
+    
+    // check if we're in the same handle
+    if(!_data->found) // a window is specified?
+    {
+        self->restrict_window(self, _data->window);
+        if(!_data->found)
+        {
+            return SRA_MOUSE_ERR_NONE;
+        }
+        HWND Handle = GetForegroundWindow();
+        if(!Handle) return SRA_MOUSE_ERR_GETFOREGROUNDWINDOW;
+        if(Handle != _data->Handle)
+        {
+            return SRA_MOUSE_ERR_NONE;
+        }
+    }
+    
     // execute routine
     SendInput(_data->Routines[SRA_MOUSE_ROUTINE_PRESSL].count, _data->Routines[SRA_MOUSE_ROUTINE_PRESSL].input, sizeof(INPUT));
     
@@ -221,6 +313,23 @@ static sra_mouse_error_t sra_mouse_releasel(sra_mouse_t *self)
 {
     // error prevenetion
     if(!self->data) return SRA_MOUSE_ERR_MISSING_SELF;
+    
+    // check if we're in the same handle
+    if(!_data->found) // a window is specified?
+    {
+        self->restrict_window(self, _data->window);
+        if(!_data->found)
+        {
+            return SRA_MOUSE_ERR_NONE;
+        }
+        HWND Handle = GetForegroundWindow();
+        if(!Handle) return SRA_MOUSE_ERR_GETFOREGROUNDWINDOW;
+        if(Handle != _data->Handle)
+        {
+            return SRA_MOUSE_ERR_NONE;
+        }
+    }
+    
     // execute routine
     SendInput(_data->Routines[SRA_MOUSE_ROUTINE_RELEASEL].count, _data->Routines[SRA_MOUSE_ROUTINE_RELEASEL].input, sizeof(INPUT));
     
@@ -236,6 +345,23 @@ static sra_mouse_error_t sra_mouse_move_xy(sra_mouse_t *self, int x, int y)
 {
     // error prevention
     if(!self->data) return SRA_MOUSE_ERR_MISSING_SELF;
+    
+    // check if we're in the same handle
+    if(!_data->found) // a window is specified?
+    {
+        self->restrict_window(self, _data->window);
+        if(!_data->found)
+        {
+            return SRA_MOUSE_ERR_NONE;
+        }
+        HWND Handle = GetForegroundWindow();
+        if(!Handle) return SRA_MOUSE_ERR_GETFOREGROUNDWINDOW;
+        if(Handle != _data->Handle)
+        {
+            return SRA_MOUSE_ERR_NONE;
+        }
+    }
+    
     // make additional routine instructions
     _data->Routines[SRA_MOUSE_ROUTINE_MOVE_XY].input[0].mi.dx = (65535 * x) / _data->Screen.Width;    // TODO magic numbers
     _data->Routines[SRA_MOUSE_ROUTINE_MOVE_XY].input[0].mi.dy = (65535 * y) / _data->Screen.Height;   // TODO magic numbers
@@ -245,23 +371,82 @@ static sra_mouse_error_t sra_mouse_move_xy(sra_mouse_t *self, int x, int y)
     return SRA_MOUSE_ERR_NONE;
 }
 
+static sra_mouse_error_t sra_mouse_restrict_window(sra_mouse_t *self, wchar_t *window)
+{
+    // error precaution
+    if(!self) return SRA_MOUSE_ERR_MISSING_SELF;
+    // set the restrict
+    
+    _data->found = false;
+    if(window)  // a window is specified?
+    {
+        int window_len = wcslen(window) + 1;
+        wchar_t *window_copy = malloc(sizeof(wchar_t) * window_len);
+        wcscpy(window_copy, window);
+        _data->window = realloc(_data->window, sizeof(wchar_t) * window_len);
+        wcscpy(_data->window, window_copy);
+        free(window_copy);
+        
+        // find window
+        //_data->Handle
+        _data->Handle = FindWindow(NULL, window);
+        if(_data->Handle)
+        {
+            printf("found window\n");
+            _data->found = true;
+            self->update_dimensions(self);
+        }
+        
+//        printf("%d x %d off %d/%d\n", _data->Width, _data->Height, _data->OffsX, _data->OffsY);
+    }
+    else    // target whole desktop
+    {
+        _data->found = true;
+        _data->Handle = 0;
+        self->update_dimensions(self);
+    }
+    return SRA_MOUSE_ERR_NONE;
+}
+
+/**
+ * @brief return the mouse position
+ * @param self
+ * @param x
+ * @param y
+ * @return 
+ */
+static sra_mouse_error_t sra_mouse_get_xy(sra_mouse_t *self, int *x, int *y)
+{
+    POINT *Point = 0;
+    if(!GetCursorPos(Point)) return SRA_MOUSE_ERR_GETCURSORPOS;
+    *x = Point->x;
+    *y = Point->y;
+    return SRA_MOUSE_ERR_NONE;
+}
 
 static sra_mouse_error_t sra_mouse_update_dimensions(sra_mouse_t *self)
 {
     if(!self) return SRA_MOUSE_ERR_MISSING_SELF;   // error precaution
     
     // https://stackoverflow.com/questions/8690619/how-to-get-Screen-resolution-in-c
-    RECT desktop;
     // Get a handle to the desktop window
-    const HWND hDesktop = GetDesktopWindow();
-    if(!hDesktop) return SRA_MOUSE_ERR_GETDESKTOPWINDOW;
+    HWND Handle = 0;
+    if(_data->Handle)
+    {
+        Handle = _data->Handle;
+    }
+    else
+    {
+        Handle = GetDesktopWindow();
+        if(!Handle) return SRA_MOUSE_ERR_GETDESKTOPWINDOW;
+    }
     // Get the size of Screen to the variable desktop
-    if(!GetWindowRect(hDesktop, &desktop)) return SRA_MOUSE_ERR_GETWINDOWRECT;
+    if(!GetWindowRect(Handle, &_data->Screen.Window)) return SRA_MOUSE_ERR_GETWINDOWRECT;
     // The top left corner will have coordinates (0,0)
     // and the bottom right corner will have coordinates
     // (horizontal, vertical)
-    _data->Screen.Width = desktop.right - desktop.left;
-    _data->Screen.Height = desktop.bottom - desktop.top;
+    _data->Screen.Width = _data->Screen.Window.right - _data->Screen.Window.left;
+    _data->Screen.Height = _data->Screen.Window.bottom - _data->Screen.Window.top;
     
     return SRA_MOUSE_ERR_NONE;
 }

@@ -30,7 +30,7 @@ typedef struct
     BITMAPINFOHEADER BitmapInfoHeader;
     BITMAPFILEHEADER BitmapFileHeader;
     
-    // window handle for restrict; NULL = desktop
+    // window handle for restrict; NULL = all/desktop
     HWND Handle;
 }
 sra_locate_data_t;
@@ -108,7 +108,8 @@ sra_locate_error_t sra_locate_setup(sra_locate_t *self)
     self->argb = 0;
     
     // initialize data with 0 / whatever its supposed to be
-    _data->Pixels = NULL;
+    _data->Pixels = 0;
+    _data->NextPX = 0;
     _data->Handle = 0;
     _data->Width = 0;
     _data->Height = 0;
@@ -371,11 +372,7 @@ static sra_locate_error_t sra_locate_restrict_window(sra_locate_t *self, wchar_t
 //        printf("%d x %d off %d/%d\n", _data->Width, _data->Height, _data->OffsX, _data->OffsY);
         
         // allocate memory for pixels
-        if(_data->Pixels)
-        {
-            free(_data->Pixels);
-        }
-        _data->Pixels = malloc(sizeof *_data->Pixels * 4 * _data->Width * _data->Height);
+        _data->Pixels = realloc(_data->Pixels, sizeof *_data->Pixels * 4 * _data->Width * _data->Height);
         if(!_data->Pixels)
         {
             _data->Handle = 0;  // reset handle
@@ -383,11 +380,7 @@ static sra_locate_error_t sra_locate_restrict_window(sra_locate_t *self, wchar_t
         }
         
         // allocate memory for next pixels
-        if(_data->NextPX)
-        {
-            free(_data->NextPX);
-        }
-        _data->NextPX = malloc(sizeof *_data->Pixels * _data->Width * _data->Height);
+        _data->NextPX = realloc(_data->NextPX, sizeof *_data->Pixels * _data->Width * _data->Height);
         if(!_data->NextPX)
         {
             _data->Handle = 0;  // reset handle

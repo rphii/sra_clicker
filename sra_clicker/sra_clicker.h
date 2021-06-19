@@ -13,12 +13,14 @@
 /*** I NEED THOSE ***/
 /********************/
 
+#include <pthread.h>
 #include <windows.h>
 #include <winuser.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <time.h>
 
 //#include <unistd.h>
 
@@ -29,6 +31,7 @@
 #include "mouse.h"
 #include "keyboard.h"
 #include "locate.h"
+#include "C:\Users\Raphael\OneDrive\c\dev\sra_nn\sra_nn.h"
 
 /******************************/
 /*** FIXING MY HIGHLIGHTING ***/
